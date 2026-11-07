@@ -8,10 +8,13 @@ public final class MetalVideoRenderer: NSObject, MTKViewDelegate {
     private let commandQueue: MTLCommandQueue?
     private let videoOutput: AVPlayerItemVideoOutput
     private var latestPixelBuffer: CVPixelBuffer?
+    private var frameCounter: Int = 0
     public let player: AVPlayer
 
     public var currentParameters = GradingParameters()
     public var sourceIsHDR: Bool = false
+    public var activeMediaKind: MediaItemKind = .video
+    public var currentPhotoImage: CIImage?
 
     public init(engine: ColorGradingEngine, player: AVPlayer) {
         self.engine = engine
@@ -36,69 +39,84 @@ public final class MetalVideoRenderer: NSObject, MTKViewDelegate {
     public func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {}
 
     public func draw(in view: MTKView) {
-        guard let commandBuffer = commandQueue?.makeCommandBuffer(),
-              let currentDrawable = view.currentDrawable else {
-            return
-        }
-
-        let itemTime = videoOutput.itemTime(forHostTime: CACurrentMediaTime())
-        if itemTime.isValid && videoOutput.hasNewPixelBuffer(forItemTime: itemTime) {
-            if let freshBuffer = videoOutput.copyPixelBuffer(forItemTime: itemTime, itemTimeForDisplay: nil) {
-                latestPixelBuffer = freshBuffer
+        autoreleasepool {
+            guard let commandBuffer = commandQueue?.makeCommandBuffer(),
+                  let currentDrawable = view.currentDrawable else {
+                return
             }
-        }
 
-        let drawableSize = view.drawableSize
-        guard drawableSize.width > 0 && drawableSize.height > 0 else { return }
+            frameCounter &+= 1
 
-        let baseImage: CIImage
-        if let pixelBuffer = latestPixelBuffer {
-            baseImage = CIImage(cvPixelBuffer: pixelBuffer)
-        } else {
-            baseImage = Self.generateReferenceTestBars(size: drawableSize)
-        }
+            let drawableSize = view.drawableSize
+            guard drawableSize.width > 0 && drawableSize.height > 0 else { return }
 
-        let gradedImage = engine.processFrame(
-            sourceImage: baseImage,
-            params: currentParameters,
-            sourceIsHDR: sourceIsHDR
-        )
-
-        let sourceExtent = gradedImage.extent
-        let scaleX = drawableSize.width / max(sourceExtent.width, 1)
-        let scaleY = drawableSize.height / max(sourceExtent.height, 1)
-        let scale = min(scaleX, scaleY)
-
-        let scaledWidth = sourceExtent.width * scale
-        let scaledHeight = sourceExtent.height * scale
-        let offsetX = (drawableSize.width - scaledWidth) * 0.5
-        let offsetY = (drawableSize.height - scaledHeight) * 0.5
-
-        let transformedImage = gradedImage
-            .transformed(by: CGAffineTransform(translationX: -sourceExtent.minX, y: -sourceExtent.minY))
-            .transformed(by: CGAffineTransform(scaleX: scale, y: scale))
-            .transformed(by: CGAffineTransform(translationX: offsetX, y: offsetY))
-
-        let background = CIImage(color: CIColor(red: 0.035, green: 0.035, blue: 0.043, alpha: 1.0))
-            .cropped(to: CGRect(origin: .zero, size: drawableSize))
-        let finalComposite = transformedImage.composited(over: background)
-
-        let destination = CIRenderDestination(
-            width: Int(drawableSize.width),
-            height: Int(drawableSize.height),
-            pixelFormat: view.colorPixelFormat,
-            commandBuffer: commandBuffer,
-            mtlTextureProvider: {
-                return currentDrawable.texture
+            let baseImage: CIImage
+            if activeMediaKind == .photo, let photoCI = currentPhotoImage {
+                baseImage = photoCI
+            } else {
+                let itemTime = videoOutput.itemTime(forHostTime: CACurrentMediaTime())
+                if itemTime.isValid && videoOutput.hasNewPixelBuffer(forItemTime: itemTime) {
+                    if let freshBuffer = videoOutput.copyPixelBuffer(forItemTime: itemTime, itemTimeForDisplay: nil) {
+                        latestPixelBuffer = freshBuffer
+                    }
+                }
+                if let pixelBuffer = latestPixelBuffer {
+                    baseImage = CIImage(cvPixelBuffer: pixelBuffer)
+                } else {
+                    baseImage = Self.generateReferenceTestBars(size: drawableSize)
+                }
             }
-        )
 
-        _ = try? engine.ciContext.startTask(toRender: finalComposite, to: destination)
-        commandBuffer.present(currentDrawable)
-        commandBuffer.commit()
+            let gradedImage = engine.processFrame(
+                sourceImage: baseImage,
+                params: currentParameters,
+                sourceIsHDR: sourceIsHDR,
+                frameIndex: frameCounter
+            )
+
+            // Periodically refresh Waveform, Vectorscope, and Histogram every 12 frames without blocking 60fps render
+            if frameCounter % 12 == 0 {
+                let snapshot = engine.computeScopesSnapshot(from: gradedImage)
+                Task { @MainActor [weak engine] in
+                    engine?.scopeTelemetry = snapshot
+                }
+            }
+
+            let sourceExtent = gradedImage.extent
+            let scaleX = drawableSize.width / max(sourceExtent.width, 1)
+            let scaleY = drawableSize.height / max(sourceExtent.height, 1)
+            let scale = min(scaleX, scaleY)
+
+            let scaledWidth = sourceExtent.width * scale
+            let scaledHeight = sourceExtent.height * scale
+            let offsetX = (drawableSize.width - scaledWidth) * 0.5
+            let offsetY = (drawableSize.height - scaledHeight) * 0.5
+
+            let transformedImage = gradedImage
+                .transformed(by: CGAffineTransform(translationX: -sourceExtent.minX, y: -sourceExtent.minY))
+                .transformed(by: CGAffineTransform(scaleX: scale, y: scale))
+                .transformed(by: CGAffineTransform(translationX: offsetX, y: offsetY))
+
+            let background = CIImage(color: CIColor(red: 0.035, green: 0.035, blue: 0.043, alpha: 1.0))
+                .cropped(to: CGRect(origin: .zero, size: drawableSize))
+            let finalComposite = transformedImage.composited(over: background)
+
+            let destination = CIRenderDestination(
+                width: Int(drawableSize.width),
+                height: Int(drawableSize.height),
+                pixelFormat: view.colorPixelFormat,
+                commandBuffer: commandBuffer,
+                mtlTextureProvider: {
+                    return currentDrawable.texture
+                }
+            )
+
+            _ = try? engine.ciContext.startTask(toRender: finalComposite, to: destination)
+            commandBuffer.present(currentDrawable)
+            commandBuffer.commit()
+        }
     }
 
-    /// Generates an offline SMPTE-inspired colorist skin/gradient reference frame when no video asset is loaded.
     private static func generateReferenceTestBars(size: CGSize) -> CIImage {
         let rect = CGRect(origin: .zero, size: CGSize(width: max(size.width, 640), height: max(size.height, 360)))
         guard let gradient = CIFilter(
@@ -122,6 +140,8 @@ public struct MetalVideoSurfaceRepresentable: UIViewRepresentable {
     public let engine: ColorGradingEngine
     public let parameters: GradingParameters
     public let sourceIsHDR: Bool
+    public let mediaKind: MediaItemKind
+    public let photoImage: CIImage?
 
     public func makeUIView(context: Context) -> MTKView {
         let mtkView = MTKView(frame: .zero, device: engine.metalDevice)
@@ -138,6 +158,8 @@ public struct MetalVideoSurfaceRepresentable: UIViewRepresentable {
     public func updateUIView(_ uiView: MTKView, context: Context) {
         renderer.currentParameters = parameters
         renderer.sourceIsHDR = sourceIsHDR
+        renderer.activeMediaKind = mediaKind
+        renderer.currentPhotoImage = photoImage
     }
 }
 #elseif os(macOS)
@@ -146,6 +168,8 @@ public struct MetalVideoSurfaceRepresentable: NSViewRepresentable {
     public let engine: ColorGradingEngine
     public let parameters: GradingParameters
     public let sourceIsHDR: Bool
+    public let mediaKind: MediaItemKind
+    public let photoImage: CIImage?
 
     public func makeNSView(context: Context) -> MTKView {
         let mtkView = MTKView(frame: .zero, device: engine.metalDevice)
@@ -162,6 +186,8 @@ public struct MetalVideoSurfaceRepresentable: NSViewRepresentable {
     public func updateNSView(_ nsView: MTKView, context: Context) {
         renderer.currentParameters = parameters
         renderer.sourceIsHDR = sourceIsHDR
+        renderer.activeMediaKind = mediaKind
+        renderer.currentPhotoImage = photoImage
     }
 }
 #endif
@@ -172,7 +198,6 @@ public struct VideoPlayerView: View {
     @State private var renderer: MetalVideoRenderer?
     @State private var zoomScale: CGFloat = 1.0
     @State private var lastZoomScale: CGFloat = 1.0
-    @State private var isSplitComparisonEnabled: Bool = false
 
     public init(engine: ColorGradingEngine, player: AVPlayer) {
         self.engine = engine
@@ -189,7 +214,9 @@ public struct VideoPlayerView: View {
                         renderer: activeRenderer,
                         engine: engine,
                         parameters: engine.parameters,
-                        sourceIsHDR: engine.sourceIsHDR
+                        sourceIsHDR: engine.sourceIsHDR,
+                        mediaKind: engine.activeMediaKind,
+                        photoImage: engine.currentPhotoImage
                     )
                     .scaleEffect(zoomScale)
                     .gesture(
@@ -212,7 +239,7 @@ public struct VideoPlayerView: View {
                     )
                 }
 
-                // Interactive Split-Screen Before/After Wipe Bar (@samdesain 1px Zinc Divider)
+                // Interactive Vertical A/B Split-Screen Wipe Bar (@samdesain 1px Zinc Divider)
                 if engine.parameters.splitComparisonNormalizedX < 0.999 {
                     let xPos = geo.size.width * CGFloat(engine.parameters.splitComparisonNormalizedX)
                     ZStack {
@@ -260,10 +287,20 @@ public struct VideoPlayerView: View {
 
                 // Top Technical Telemetry Strip (@samdesain 10% Fallback: Matte Zinc, 1px Border, 4px Radius)
                 VStack {
-                    HStack(spacing: 8) {
-                        TelemetryBadge(label: engine.sourceIsHDR ? "HDR -> Rec.709 SDR" : "Rec.709 SDR", isAccent: engine.sourceIsHDR)
+                    HStack(spacing: 6) {
+                        TelemetryBadge(
+                            label: engine.activeMediaKind == .photo
+                                ? (engine.isProRAWPhoto ? "ProRAW / DNG Linear" : "PHOTO sRGB / Rec.709")
+                                : (engine.parameters.basics.appleLogToRec709Enabled ? "APPLE LOG -> Rec.709" : (engine.sourceIsHDR ? "HDR -> Rec.709 SDR" : "Rec.709 SDR")),
+                            isAccent: true
+                        )
                         TelemetryBadge(label: "\(Int(engine.videoNaturalSize.width))x\(Int(engine.videoNaturalSize.height))", isAccent: false)
-                        TelemetryBadge(label: String(format: "%.0f FPS", engine.nominalFrameRate), isAccent: false)
+                        if engine.activeMediaKind == .video {
+                            TelemetryBadge(label: String(format: "%.0f FPS", engine.nominalFrameRate), isAccent: false)
+                        }
+                        if engine.parameters.skinToneProtectionLock {
+                            TelemetryBadge(label: "SKIN LOCK ON", isAccent: false)
+                        }
                         if engine.parameters.antiBandingDitherEnabled {
                             TelemetryBadge(label: "DITHER 0.5 LSB", isAccent: false)
                         }
@@ -300,7 +337,7 @@ private struct TelemetryBadge: View {
 
     var body: some View {
         Text(label)
-            .font(.system(size: 11, weight: .medium, design: .monospaced))
+            .font(.system(size: 10, weight: .medium, design: .monospaced))
             .foregroundStyle(isAccent ? Color(red: 0.98, green: 0.75, blue: 0.14) : Color(white: 0.88))
             .padding(.horizontal, 7)
             .padding(.vertical, 3)
@@ -312,4 +349,3 @@ private struct TelemetryBadge: View {
             .clipShape(RoundedRectangle(cornerRadius: 4))
     }
 }
-

@@ -22,7 +22,7 @@ public enum LUTParserError: LocalizedError, Sendable {
         case .missingLUTDimension:
             return "Missing LUT_3D_SIZE declaration in .cube file."
         case .invalidDimension(let dim):
-            return "LUT dimension \(dim) is outside the supported CoreImage range (2 to 64)."
+            return "LUT dimension \(dim) is outside the supported range (2 to 65)."
         case .malformedColorTriplet(let line, let raw):
             return "Invalid RGB floating-point triplet at line \(line): '\(raw)'."
         case .tripletCountMismatch(let expected, let actual):
@@ -35,7 +35,7 @@ public enum LUTParserError: LocalizedError, Sendable {
     }
 }
 
-public struct ParsedLUT: Sendable, Equatable {
+public struct ParsedLUT: Codable, Sendable, Equatable {
     public let title: String
     public let dimension: Int
     public let cubeData: Data
@@ -132,7 +132,7 @@ public enum LUTParser {
                 guard parts.count >= 2, let size = Int(parts[1]) else {
                     throw LUTParserError.missingLUTDimension
                 }
-                guard (2...64).contains(size) else {
+                guard (2...65).contains(size) else {
                     throw LUTParserError.invalidDimension(size)
                 }
                 dimension = size

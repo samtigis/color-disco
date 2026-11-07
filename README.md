@@ -1,47 +1,53 @@
-# ColorDisco Studio
+# ColorDisco : Pro Grade Studio (iOS, iPadOS, macOS)
 
-High-performance, offline-first professional video color grading application for **iOS (iPhone)**, **iPadOS (iPad)**, and **macOS (Mac)** built with Swift, SwiftUI, Metal (`MTKView` + MSL stitchable shaders), Core Image (`CIContext`), and AVFoundation (`AVAssetReader` / `AVAssetWriter`).
+Studio-grade, 100% offline-first **Dual Video & Photo Native Color Suite** for **iOS (iPhone)**, **iPadOS (iPad)**, and **macOS (Mac)** built with Swift 5.9+/6, SwiftUI, Metal (`MTKView` + custom MSL compute & fragment shaders), Core Image (`CIContext` + `CIRAWFilter`), Accelerate (`vImage`), and AVFoundation (`AVAssetReader` / `AVAssetWriter`).
 
-## Architecture & Features
+## Full Feature Set
 
-- **Unified Apple Ecosystem Codebase**: Targets iOS 17+, iPadOS 17+, and macOS 14+ (Sonoma/Sequoia) with zero third-party dependencies.
-- **3D LUT Engine (`LUTParser.swift`)**:
-  - Parses standard Adobe/Resolve `.cube` 3D LUT files (`LUT_3D_SIZE N`, `DOMAIN_MIN`, `DOMAIN_MAX`, $N^3$ RGB float triplets).
-  - Decodes 2D HALD PNG identity/graded images into `CIColorCubeWithColorSpace` RGBA Float32 buffers.
-  - Includes procedural studio presets (`Rec.709 Natural Neutral`, `Kodak 2383 Film Print`, `Cine Tungsten & Amber`, `Silver Bleach Retention`, `Apple Log to Rec.709 SDR`).
-- **7-Stage Color Pipeline (`ColorGradingEngine.swift` & `ColorGradingShaders.metal`)**:
-  1. Linear working space ingest & automatic HDR (PQ SMPTE ST 2084 / HLG BT.2100) to Rec. 709 100-nit SDR tonemapping.
-  2. Exposure (`CIExposureAdjust`) & S-Curve Contrast (`CIToneCurve`).
-  3. White Balance Temperature & Tint (`CITemperatureAndTint`).
-  4. 3-Way Color Corrector (Lift / Gamma / Gain) for Shadows, Midtones, and Highlights.
-  5. 3D LUT application (`CIColorCubeWithColorSpace`) with continuous intensity blending.
-  6. Skin-safe Vibrance (`CIVibrance`) & Saturation (`CIColorControls`).
-  7. Zero-mean Triangular PDF Micro-Dither (`0.5 LSB` at 8-bit depth) to eliminate sky/gradient banding on social media encoders.
-- **Real-Time 60fps Metal Preview (`VideoPlayerView.swift`)**:
-  - `MTKView` + `AVPlayerItemVideoOutput` zero-copy rendering with interactive **Split-Screen Before/After Wipe** and **Tap-and-Hold Bypass**.
-- **Social Media Master Exporter (`VideoExporter.swift`)**:
-  - Offline frame-accurate `AVAssetReader` + `AVAssetWriter` pipeline with `AsyncThrowingStream<Float>` progress.
-  - H.264 High Profile Level 4.2, explicit `ITU_R_709_2` Color Primaries / Transfer / Matrix tags, macroblock-even dimensions (`1080x1920`, `1080x1350`, `1080x1080`), and Constant Frame Rate (CFR `14 Mbps` @ 30fps, `20 Mbps` @ 60fps).
-- **UI/UX System (`@samios` & `antislop`)**:
-  - 90% iOS 26 Kit components + 10% `@samdesain` Utilitarian Swiss Minimalist fallback (`DESIGN.md`).
-  - Interactive browser prototype in `prototype/index.html` with iPhone, iPad, and Mac workspace modes.
+1. **Dual Media Handling (Video & Still Photo)**:
+   - **Video Ingestion**: Real-time 60fps decoding via `AVPlayerItemVideoOutput` and frame-accurate offline master export via `AVAssetReader` + `AVAssetWriter` (supports Apple Log, 4K60, HDR10 / Dolby Vision / HLG, and SDR).
+   - **Photo Ingestion**: Native decoding of **Apple ProRAW / DNG** (via `CIRAWFilter` with full linear dynamic range), HEIC, PNG, TIFF, and JPEG into full-precision float `CIImage`.
+2. **8-Stage Deterministic Color Correction Pipeline**:
+   - **Stage 1 (Input Normalization)**: One-click **Apple Log to Rec.709** transform and automatic HDR PQ/HLG to Rec.709 100-nit SDR tonemapping.
+   - **Stage 2 (Primary Grading)**: Exposure (EV), Contrast, S-Curve Contrast, Kelvin White Balance & Green/Magenta Tint, Highlights, Shadows, Whites, Blacks, Skin-Safe Vibrance, and Saturation.
+   - **Stage 3 (4-Channel Parametric Tone Curves)**: Interactive 5-point Bezier spline curves for **Master (Luma), Red, Green, and Blue** with Matte/Faded Blacks and Film S-Curve presets.
+   - **Stage 4 (8-Channel HSL Warper + Skin Tone Protection Lock)**: Targeted Hue Shift, Saturation, and Luminance controls for **Red, Orange, Yellow, Green, Cyan, Blue, Purple, and Magenta** with a dedicated **Skin Tone Protection Lock** that isolates and protects human skin tones.
+   - **Stage 5 (3D LUT Ingestion)**: `.cube` text parser ($2^3$ to $65^3$ cubes) and 2D HALD-PNG decoder with dynamic **LUT Opacity/Intensity** ($0.0 - 1.0$) blending.
+   - **Stage 6 (3-Way Color Wheels)**: Lift (Shadows), Gamma (Midtones), and Gain (Highlights) chromaticity offset and master luma sliders.
+   - **Stage 7 (Film Emulation Engine)**:
+     - **Halation**: Warm red/amber scatter around high-contrast edges and specular highlights.
+     - **Dynamic Procedural Film Grain**: Per-frame organic simplex/golden-ratio emulsion noise in Metal with adjustable grain size (16mm / 35mm) and roughness.
+   - **Stage 8 (Anti-Banding Micro-Dither Guard)**: Zero-mean `0.5 LSB` Triangular PDF dither to prevent 8-bit quantization banding on flat skies and shadows when compressed by Instagram Reels, TikTok, or YouTube Shorts.
+3. **Real-Time GPU/Accelerate Colorist Scopes (`ScopesView.swift` & `Shaders.metal`)**:
+   - **RGB & Luma Waveform** ($0 - 100$ IRE)
+   - **Polar Vectorscope** with dedicated **Skin Tone I-Line**
+   - **4-Channel Histogram** (Red, Green, Blue, Luma)
+4. **Workflow, Presets & Offline Batch Processing (`BatchExporter.swift`)**:
+   - **Interactive A/B Comparison**: Hold-to-preview original media bypass and draggable vertical A/B split-screen wipe.
+   - **Grade Management**: JSON-serializable `Codable` recipes, local preset library, and instant **Copy Grade / Paste Grade** across photos and video clips.
+   - **Offline Batch Processing**: Background rendering across multiple photos (`JPEG Rec.709/sRGB`, `16-Bit TIFF`, `Lossless PNG`) and videos (`H.264 High Profile L4.2`, explicit `ITU_R_709_2` color tags, CFR `14 Mbps` @ 30fps / `20 Mbps` @ 60fps) with `autoreleasepool` buffer reuse.
 
 ## Repository Structure
 
 ```text
 ├── DESIGN.md
 ├── Package.swift
+├── README.md
 ├── apple_ecosystem_video_color_grading_master_prompt.md
+├── tambah-fitur.md
 ├── prototype/
 │   ├── index.html
 │   └── sample_kodak_2383.cube
 └── Sources/
     └── ColorDisco/
+        ├── BatchExporter.swift
         ├── ColorDiscoApp.swift
         ├── ColorGradingEngine.swift
-        ├── ColorGradingShaders.metal
+        ├── ColorGradingModels.swift
         ├── ContentView.swift
         ├── LUTParser.swift
+        ├── ScopesView.swift
+        ├── Shaders.metal
         ├── VideoExporter.swift
         └── VideoPlayerView.swift
 ```

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ColorDisco Studio : Apple Ecosystem Video Color Grader (@samios)</title>
+  <title>Pro Grade Studio : Dual Video & Photo Color Suite (@samios)</title>
   <link rel="stylesheet" href="https://aiuxplayground.com/kits/ios-26/v1/ios.css">
   <style>
     :root {
@@ -18,7 +18,6 @@
       --zinc-100: #f4f4f5;
       --zinc-50: #fafafa;
       --accent-amber: #f59e0b;
-      --accent-amber-light: #b45309;
       --mono-font: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
     }
 
@@ -52,10 +51,9 @@
       outline-offset: 2px !important;
     }
 
-    /* Studio Prototype Top Harness (@samdesain Utilitarian Strip) */
     .studio-harness {
       width: 100%;
-      max-width: 1360px;
+      max-width: 1400px;
       padding: 10px 16px;
       display: flex;
       flex-wrap: wrap;
@@ -75,7 +73,8 @@
     .harness-brand {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
     .harness-title {
@@ -104,7 +103,7 @@
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .harness-btn {
@@ -136,7 +135,6 @@
       font-weight: 600;
     }
 
-    /* Main Stage Container */
     .stage-wrap {
       width: 100%;
       display: flex;
@@ -149,7 +147,7 @@
       position: relative;
       width: 402px;
       max-width: 100%;
-      min-height: 852px;
+      min-height: 874px;
       border-radius: 44px;
       border: 1px solid var(--zinc-800);
       overflow: hidden;
@@ -159,14 +157,14 @@
     }
 
     .ios-surface.device-frame[data-device="ipad"] {
-      width: 1024px;
-      min-height: 740px;
+      width: 1060px;
+      min-height: 760px;
       border-radius: 24px;
     }
 
     .ios-surface.device-frame[data-device="mac"] {
-      width: 1240px;
-      min-height: 760px;
+      width: 1280px;
+      min-height: 780px;
       border-radius: 12px;
     }
 
@@ -179,7 +177,6 @@
       }
     }
 
-    /* macOS Window Traffic Lights Bar (shown only in Mac mode) */
     .mac-window-bar {
       display: none;
       align-items: center;
@@ -216,7 +213,6 @@
       border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
-    /* Multi-Column Adaptive Workspace Grid */
     .workspace-body {
       flex: 1;
       display: flex;
@@ -229,10 +225,9 @@
       flex-direction: row;
     }
 
-    /* Left Sidebar for iPad / Mac */
     .sidebar-luts {
       display: none;
-      width: 260px;
+      width: 270px;
       border-right: 1px solid rgba(128, 128, 128, 0.2);
       flex-direction: column;
       overflow-y: auto;
@@ -255,23 +250,23 @@
       display: flex;
       flex-direction: column;
       border-top: 1px solid rgba(128, 128, 128, 0.2);
-      max-height: 410px;
+      max-height: 430px;
       overflow-y: auto;
     }
 
     .ios-surface.device-frame[data-device="ipad"] .inspector-column,
     .ios-surface.device-frame[data-device="mac"] .inspector-column {
-      width: 350px;
+      width: 370px;
       max-height: none;
       border-top: none;
       border-left: 1px solid rgba(128, 128, 128, 0.2);
     }
 
-    /* 10% @samdesain Fallback Module 1: Video Canvas & Telemetry Bar */
+    /* 10% @samdesain Fallback Module 1: Video/Photo Canvas & Scopes Overlay */
     .canvas-stage {
       position: relative;
       width: 100%;
-      height: 290px;
+      height: 295px;
       background: #09090b;
       display: flex;
       align-items: center;
@@ -286,7 +281,7 @@
     .ios-surface.device-frame[data-device="mac"] .canvas-stage {
       flex: 1;
       height: auto;
-      min-height: 420px;
+      min-height: 430px;
     }
 
     #gradingCanvas {
@@ -303,7 +298,7 @@
       right: 8px;
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 5px;
       pointer-events: none;
       z-index: 4;
     }
@@ -314,7 +309,7 @@
       font-variant-numeric: tabular-nums;
       padding: 3px 6px;
       border-radius: 4px;
-      background: rgba(9, 9, 11, 0.86);
+      background: rgba(9, 9, 11, 0.88);
       color: #f4f4f5;
       border: 1px solid #27272a;
     }
@@ -322,6 +317,50 @@
     .telemetry-pill.accent {
       color: #fbbf24;
       border-color: rgba(245, 158, 11, 0.6);
+    }
+
+    /* Floating Real-Time Scopes Widget (Waveform / Vectorscope / Histogram) */
+    .scopes-floating-box {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      width: 176px;
+      background: rgba(9, 9, 11, 0.90);
+      border: 1px solid #27272a;
+      border-radius: 6px;
+      padding: 6px;
+      z-index: 6;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .scopes-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--mono-font);
+      font-size: 9px;
+      color: #d4d4d8;
+    }
+
+    .scope-mode-btn {
+      background: #18181b;
+      color: #fafafa;
+      border: 1px solid #3f3f46;
+      border-radius: 3px;
+      font-family: var(--mono-font);
+      font-size: 9px;
+      padding: 1px 5px;
+      cursor: pointer;
+    }
+
+    #scopeCanvas {
+      width: 100%;
+      height: 68px;
+      display: block;
+      background: #050507;
+      border-radius: 4px;
     }
 
     /* Interactive Split Wipe Line */
@@ -353,12 +392,12 @@
       white-space: nowrap;
     }
 
-    /* 10% @samdesain Fallback Module 2: 3-Way Color Wheels (Lift / Gamma / Gain) */
+    /* 10% @samdesain Fallback Module 2: 3-Way Color Wheels & Parametric Curve Box */
     .wheels-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      padding: 12px 14px;
+      padding: 10px 14px;
     }
 
     .wheel-card {
@@ -376,13 +415,12 @@
       font-family: var(--mono-font);
       font-size: 10px;
       font-weight: 600;
-      letter-spacing: 0.02em;
     }
 
     .wheel-ring {
       position: relative;
-      width: 78px;
-      height: 78px;
+      width: 76px;
+      height: 76px;
       border-radius: 50%;
       border: 1px solid rgba(128, 128, 128, 0.4);
       background: radial-gradient(circle, rgba(128,128,128,0.12) 0%, rgba(9,9,11,0.45) 100%);
@@ -431,11 +469,28 @@
       opacity: 0.85;
     }
 
-    .slider-block {
-      padding: 10px 16px;
+    .curve-box-wrap {
+      padding: 8px 14px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 8px;
+    }
+
+    #curveEditorCanvas {
+      width: 100%;
+      height: 150px;
+      background: #09090b;
+      border: 1px solid rgba(128, 128, 128, 0.28);
+      border-radius: 6px;
+      cursor: ns-resize;
+      display: block;
+    }
+
+    .slider-block {
+      padding: 8px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
     .slider-header {
@@ -444,7 +499,7 @@
       align-items: center;
       font-size: 12px;
       font-weight: 500;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
     }
 
     .slider-val {
@@ -472,49 +527,49 @@
 </head>
 <body>
 
-  <!-- Top Prototype Verification Bar (Switch Device, Theme, and R-27 States) -->
+  <!-- Top Prototype Verification Bar -->
   <nav class="studio-harness" aria-label="Prototype Environment Controls">
     <div class="harness-brand">
-      <span class="harness-title">ColorDisco Prototype</span>
-      <span class="harness-tag">90% @samios (iOS 26 Kit) + 10% @samdesain</span>
-      <span class="harness-tag">Dial: E1 / R2 / M1</span>
+      <span class="harness-title">Pro Grade Studio</span>
+      <span class="harness-tag">Dual Video & Photo (ProRAW/Log)</span>
+      <span class="harness-tag">90% @samios + 10% @samdesain</span>
     </div>
 
     <div class="harness-controls" role="group" aria-label="Device Mode">
-      <button type="button" class="harness-btn" id="btnDeviceIphone" aria-pressed="true" onclick="setDeviceMode('iphone')">iPhone (iOS 26)</button>
-      <button type="button" class="harness-btn" id="btnDeviceIpad" aria-pressed="false" onclick="setDeviceMode('ipad')">iPad (Split View)</button>
-      <button type="button" class="harness-btn" id="btnDeviceMac" aria-pressed="false" onclick="setDeviceMode('mac')">Mac (Pro NLE)</button>
+      <button type="button" class="harness-btn" id="btnDeviceIphone" aria-pressed="true" onclick="setDeviceMode('iphone')">iPhone</button>
+      <button type="button" class="harness-btn" id="btnDeviceIpad" aria-pressed="false" onclick="setDeviceMode('ipad')">iPad Split</button>
+      <button type="button" class="harness-btn" id="btnDeviceMac" aria-pressed="false" onclick="setDeviceMode('mac')">Mac Studio</button>
     </div>
 
-    <div class="harness-controls" role="group" aria-label="UI States and Theme">
-      <button type="button" class="harness-btn" id="btnStateActive" aria-pressed="true" onclick="setUIState('active')">State: Active Clip</button>
-      <button type="button" class="harness-btn" id="btnStateEmpty" aria-pressed="false" onclick="setUIState('empty')">State: Empty</button>
-      <button type="button" class="harness-btn" id="btnStateExport" aria-pressed="false" onclick="openExportSheet()">State: Exporting</button>
-      <button type="button" class="harness-btn" id="btnStateError" aria-pressed="false" onclick="openErrorAlert()">State: LUT Error</button>
+    <div class="harness-controls" role="group" aria-label="Media Type and States">
+      <button type="button" class="harness-btn" id="btnMediaVideo" aria-pressed="true" onclick="setMediaKind('video')">Media: Video (Log/HDR)</button>
+      <button type="button" class="harness-btn" id="btnMediaPhoto" aria-pressed="false" onclick="setMediaKind('photo')">Media: Photo (ProRAW)</button>
+      <button type="button" class="harness-btn" id="btnStateEmpty" aria-pressed="false" onclick="setUIState('empty')">Empty</button>
+      <button type="button" class="harness-btn" id="btnStateExport" aria-pressed="false" onclick="openExportSheet()">Batch Export</button>
+      <button type="button" class="harness-btn" id="btnStateError" aria-pressed="false" onclick="openErrorAlert()">Error</button>
       <button type="button" class="harness-btn" id="btnThemeToggle" aria-pressed="true" onclick="toggleTheme()">Theme: Dark</button>
     </div>
   </nav>
 
-  <!-- Hidden File Inputs for Real Video & .cube LUT Testing -->
-  <input type="file" id="realVideoInput" accept="video/*" style="display:none" onchange="handleVideoFile(event)">
+  <!-- Hidden File Inputs -->
+  <input type="file" id="realMediaInput" accept="video/*,image/*,.dng" style="display:none" onchange="handleMediaFile(event)">
   <input type="file" id="realCubeInput" accept=".cube,.png" style="display:none" onchange="handleCubeFile(event)">
 
   <main class="stage-wrap">
-    <!-- Primary @samios Container: .ios-surface -->
     <div class="ios-surface dark device-frame" id="iosSurface" data-device="iphone" data-bg="grouped">
 
-      <!-- macOS Window Header (Visible in Mac mode) -->
+      <!-- macOS Window Bar -->
       <div class="mac-window-bar">
         <div class="mac-dots" aria-hidden="true">
           <span class="mac-dot" style="background:#ff5f56"></span>
           <span class="mac-dot" style="background:#ffbd2e"></span>
           <span class="mac-dot" style="background:#27c93f"></span>
         </div>
-        <span>ColorDisco Studio Pro : Rec.709 Master Pipeline (Metal + CoreImage)</span>
-        <span>Shortcuts: [Space] Play  [\] Split  [E] Export</span>
+        <span>Pro Grade Studio : Video (Apple Log / 4K60) & Photo (ProRAW / DNG)</span>
+        <span>[Space] Play  [\] Split  [C/V] Copy/Paste Grade  [E] Export</span>
       </div>
 
-      <!-- iOS 26 Component 1: Dynamic Island & Status Bar -->
+      <!-- iOS 26 Dynamic Island & Status Bar -->
       <div class="ios-island"></div>
       <div class="ios-statusbar">
         <div class="ios-statusbar__row">
@@ -523,29 +578,32 @@
           <span class="ios-statusbar__icons">
             <i class="ios-icon ios-icon--cellular"></i>
             <i class="ios-icon ios-icon--wifi"></i>
-            <span class="ios-battery" style="--level:94"><i></i></span>
+            <span class="ios-battery" style="--level:96"><i></i></span>
           </span>
         </div>
       </div>
 
-      <!-- iOS 26 Component 2: Navigation Bar -->
+      <!-- iOS 26 Navigation Bar -->
       <header class="ios-navbar">
         <div class="ios-navbar__bar">
           <div class="ios-navbar__leading">
             <div class="ios-barbutton-group">
-              <button type="button" class="ios-barbutton" aria-label="Import Video Clip" onclick="document.getElementById('realVideoInput').click()">
-                <i class="ios-icon ios-icon--folder" style="--w:18px;--h:18px"></i>
+              <button type="button" class="ios-barbutton" aria-label="Import Video or Photo" onclick="document.getElementById('realMediaInput').click()">
+                <i class="ios-icon ios-icon--camera" style="--w:18px;--h:18px"></i>
               </button>
               <button type="button" class="ios-barbutton" aria-label="Import .cube LUT" onclick="document.getElementById('realCubeInput').click()">
                 <i class="ios-icon ios-icon--plus" style="--w:18px;--h:18px"></i>
               </button>
             </div>
           </div>
-          <h1 class="ios-navbar__inline-title">ColorDisco Rec.709</h1>
+          <h1 class="ios-navbar__inline-title">Pro Grade Studio</h1>
           <div class="ios-navbar__trailing">
             <div class="ios-barbutton-group">
+              <button type="button" class="ios-barbutton" aria-label="Copy Grade" onclick="copyGrade()">
+                <i class="ios-icon ios-icon--copy" style="--w:17px;--h:17px"></i>
+              </button>
               <button type="button" class="ios-barbutton" aria-label="Reset Grade" onclick="resetAllGrading()">Reset</button>
-              <button type="button" class="ios-barbutton" data-variant="prominent" aria-label="Export Master Video" onclick="openExportSheet()">
+              <button type="button" class="ios-barbutton" data-variant="prominent" aria-label="Export Master" onclick="openExportSheet()">
                 <i class="ios-icon ios-icon--share" style="--w:18px;--h:18px"></i>
               </button>
             </div>
@@ -553,20 +611,20 @@
         </div>
       </header>
 
-      <!-- iOS 26 Component 3: HUD Confirmation Pill -->
+      <!-- iOS 26 HUD Confirmation Pill -->
       <div id="hudBanner" class="ios-hud" data-variant="pill" role="status" style="margin:6px auto;display:none">
         <i class="ios-icon ios-icon--circle-check"></i>
-        <span id="hudText">Applied Kodak 2383 LUT</span>
+        <span id="hudText">Applied Grade</span>
       </div>
 
-      <!-- Empty State View (iOS 26 Component 4: .ios-empty, shown when State = Empty) -->
+      <!-- Empty State View (.ios-empty) -->
       <div id="emptyStateContainer" class="ios-empty hidden-pane" style="flex:1;padding:48px 24px">
-        <i class="ios-icon ios-icon--image"></i>
-        <h2>No Video Clip Loaded</h2>
-        <p>Import a Log, HDR (Dolby Vision / HLG), or SDR video clip, or load the built-in 60fps reference test scene to begin grading.</p>
+        <i class="ios-icon ios-icon--camera"></i>
+        <h2>No Video or Photo Loaded</h2>
+        <p>Import an Apple Log video, 4K60 HDR clip, or Apple ProRAW (.DNG / HEIC) still photo, or load the built-in studio reference scene.</p>
         <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px">
           <button type="button" class="ios-button" data-variant="filled" onclick="setUIState('active')">Load Reference Scene</button>
-          <button type="button" class="ios-button" data-variant="gray" onclick="document.getElementById('realVideoInput').click()">Open Video File</button>
+          <button type="button" class="ios-button" data-variant="gray" onclick="document.getElementById('realMediaInput').click()">Import Media</button>
         </div>
       </div>
 
@@ -574,14 +632,14 @@
       <div id="activeWorkspace" class="workspace-body">
 
         <!-- Left Sidebar (Visible on iPad & Mac Split View) -->
-        <aside class="sidebar-luts" aria-label="LUT Library Sidebar">
+        <aside class="sidebar-luts" aria-label="LUTs and Grade Management Sidebar">
           <label class="ios-search" data-variant="filled">
             <i class="ios-icon ios-icon--search"></i>
-            <input type="search" placeholder="Search .cube LUTs" aria-label="Search LUTs" oninput="filterLUTList(this.value)">
+            <input type="search" placeholder="Search .cube LUTs (17^3-65^3)" aria-label="Search LUTs" oninput="filterLUTList(this.value)">
           </label>
-          <div class="ios-list" style="padding:10px 0">
+          <div class="ios-list" style="padding:8px 0">
             <section class="ios-list__section">
-              <h2 class="ios-list__header">3D LUT Presets (32^3 Float)</h2>
+              <h2 class="ios-list__header">3D LUT Library</h2>
               <div class="ios-list__group">
                 <label class="ios-row"><input type="radio" name="sidebarLut" checked onchange="applyLUTPreset('rec709', 'Rec.709 Natural Neutral')"><div class="ios-row__body"><span class="ios-row__title">Rec.709 Natural Neutral</span><i class="ios-row__check ios-icon ios-icon--checkmark" style="--w:17px;--h:16px"></i></div></label>
                 <label class="ios-row"><input type="radio" name="sidebarLut" onchange="applyLUTPreset('kodak2383', 'Kodak 2383 Film Print')"><div class="ios-row__body"><span class="ios-row__title">Kodak 2383 Film Print</span><i class="ios-row__check ios-icon ios-icon--checkmark" style="--w:17px;--h:16px"></i></div></label>
@@ -589,35 +647,46 @@
                 <label class="ios-row"><input type="radio" name="sidebarLut" onchange="applyLUTPreset('bleach', 'Silver Bleach Retention')"><div class="ios-row__body"><span class="ios-row__title">Silver Bleach Retention</span><i class="ios-row__check ios-icon ios-icon--checkmark" style="--w:17px;--h:16px"></i></div></label>
                 <label class="ios-row"><input type="radio" name="sidebarLut" onchange="applyLUTPreset('applelog', 'Apple Log to Rec.709')"><div class="ios-row__body"><span class="ios-row__title">Apple Log to Rec.709</span><i class="ios-row__check ios-icon ios-icon--checkmark" style="--w:17px;--h:16px"></i></div></label>
               </div>
-              <p class="ios-list__footer">Drop any Adobe/Resolve .cube file onto the canvas to load custom 3D LUT cubes.</p>
             </section>
           </div>
-          <button type="button" class="ios-button" data-variant="tinted" data-block onclick="document.getElementById('realCubeInput').click()">Import .cube File</button>
+          <div style="display:flex;gap:6px;margin-top:4px">
+            <button type="button" class="ios-button" data-variant="gray" data-size="sm" style="flex:1" onclick="copyGrade()">Copy Grade</button>
+            <button type="button" class="ios-button" data-variant="tinted" data-size="sm" style="flex:1" onclick="pasteGrade()">Paste Grade</button>
+          </div>
         </aside>
 
-        <!-- Center Column: Metal/Canvas Viewport + iOS 26 Toolbar -->
-        <section class="center-viewport-column" aria-label="Video Grading Viewport">
+        <!-- Center Column: Metal/Canvas Viewport + Live Scopes + Toolbar -->
+        <section class="center-viewport-column" aria-label="Video and Photo Grading Viewport">
           <div class="canvas-stage" id="canvasStage" ondragover="event.preventDefault()" ondrop="handleCanvasDrop(event)">
-            <canvas id="gradingCanvas" width="720" height="480" aria-label="Real-time 60fps graded video preview"></canvas>
+            <canvas id="gradingCanvas" width="720" height="480" aria-label="Real-time 60fps graded preview"></canvas>
 
-            <!-- 10% @samdesain Fallback: Technical Telemetry Strip -->
+            <!-- Technical Telemetry Strip -->
             <div class="telemetry-strip">
-              <span class="telemetry-pill accent" id="badgeColorSpace">HDR PQ -> Rec.709 SDR</span>
-              <span class="telemetry-pill" id="badgeResolution">1080x1920 (9:16)</span>
-              <span class="telemetry-pill" id="badgeFPS">60 FPS CFR</span>
+              <span class="telemetry-pill accent" id="badgeMediaMode">VIDEO : APPLE LOG -> Rec.709</span>
+              <span class="telemetry-pill" id="badgeResolution">1080x1920</span>
+              <span class="telemetry-pill" id="badgeSkinLock">SKIN LOCK ON</span>
               <span class="telemetry-pill" id="badgeDither">DITHER 0.5 LSB</span>
               <span class="telemetry-pill" id="badgeActiveLUT">LUT: Rec.709 Natural</span>
             </div>
 
-            <!-- Interactive Split-Screen Before/After Wipe Handle -->
+            <!-- Real-Time GPU/Canvas Scopes Widget (Waveform / Vectorscope / Histogram) -->
+            <div class="scopes-floating-box" id="scopesFloatingBox">
+              <div class="scopes-header">
+                <span id="scopeTitleLabel">WAVEFORM (0-100 IRE)</span>
+                <button type="button" class="scope-mode-btn" onclick="cycleScopeMode()">Switch Scope</button>
+              </div>
+              <canvas id="scopeCanvas" width="164" height="68" aria-label="Real-time Waveform, Vectorscope, and Histogram"></canvas>
+            </div>
+
+            <!-- Interactive Vertical A/B Split-Screen Wipe Bar -->
             <div class="split-wipe-overlay" id="splitWipeBar" style="left: 55%;">
               <div class="split-handle-pill">GRADED | ORIGINAL</div>
             </div>
           </div>
 
-          <!-- iOS 26 Component 5: Toolbar (Transport & Split Comparison Actions) -->
+          <!-- iOS 26 Toolbar -->
           <div class="ios-toolbar" style="width:100%">
-            <div class="ios-barbutton-group">
+            <div class="ios-barbutton-group" id="transportGroup">
               <button type="button" class="ios-barbutton" aria-label="Step Backward" onclick="stepFrame(-1)">
                 <i class="ios-icon ios-icon--backward"></i>
               </button>
@@ -628,189 +697,205 @@
                 <i class="ios-icon ios-icon--forward"></i>
               </button>
             </div>
-            <span class="ios-toolbar__label"><b id="timecodeReadout" style="font-family:var(--mono-font);font-size:12px">00:00:04:18</b></span>
+            <span class="ios-toolbar__label"><b id="timecodeReadout" style="font-family:var(--mono-font);font-size:11px">00:00:04:18</b></span>
             <div class="ios-barbutton-group">
-              <button type="button" class="ios-barbutton" id="btnToggleSplit" aria-label="Toggle Split Screen Comparison" onclick="toggleSplitWipe()">
-                Split
-              </button>
-              <button type="button" class="ios-barbutton" id="btnBypassHold" aria-label="Bypass Grade" onmousedown="setBypass(true)" onmouseup="setBypass(false)" onmouseleave="setBypass(false)" onclick="toggleBypassClick()">
-                Orig
-              </button>
+              <button type="button" class="ios-barbutton" aria-label="Toggle Split Screen" onclick="toggleSplitWipe()">Split</button>
+              <button type="button" class="ios-barbutton" aria-label="Toggle Scopes Overlay" onclick="toggleScopesBox()">Scopes</button>
+              <button type="button" class="ios-barbutton" aria-label="Hold to Preview Original" onmousedown="setBypass(true)" onmouseup="setBypass(false)" onmouseleave="setBypass(false)" onclick="toggleBypassClick()">Orig</button>
             </div>
           </div>
         </section>
 
-        <!-- Right/Bottom Inspector Deck -->
+        <!-- Right / Bottom Inspector Deck (6-Segment Thumb-Friendly Bar) -->
         <aside class="inspector-column" aria-label="Grading Controls Deck">
-          <!-- iOS 26 Component 6: Segmented Control -->
-          <div style="padding: 10px 14px 4px;">
-            <div class="ios-segmented" style="--n:4" role="radiogroup" aria-label="Grading Deck Mode">
-              <label><input type="radio" name="deckTab" value="luts" checked onchange="switchDeckTab('luts')">LUTs</label>
+          <div style="padding: 8px 10px 4px;">
+            <div class="ios-segmented" data-size="sm" style="--n:6" role="radiogroup" aria-label="Grading Deck Mode">
+              <label><input type="radio" name="deckTab" value="basics" checked onchange="switchDeckTab('basics')">Basics</label>
+              <label><input type="radio" name="deckTab" value="curves" onchange="switchDeckTab('curves')">Curves</label>
+              <label><input type="radio" name="deckTab" value="hsl" onchange="switchDeckTab('hsl')">HSL</label>
               <label><input type="radio" name="deckTab" value="wheels" onchange="switchDeckTab('wheels')">Wheels</label>
-              <label><input type="radio" name="deckTab" value="sliders" onchange="switchDeckTab('sliders')">Sliders</label>
-              <label><input type="radio" name="deckTab" value="export" onchange="switchDeckTab('export')">Export</label>
+              <label><input type="radio" name="deckTab" value="film" onchange="switchDeckTab('film')">Film</label>
+              <label><input type="radio" name="deckTab" value="luts" onchange="switchDeckTab('luts')">LUTs</label>
             </div>
           </div>
 
-          <!-- TAB 1: 3D LUTs & Categories (iOS 26 Chips + List + Slider) -->
-          <div id="tabPaneLuts">
-            <!-- iOS 26 Component 7: Chips -->
-            <div class="ios-chips" style="padding: 8px 14px;">
-              <label class="ios-chip"><input type="radio" name="lutCat" checked onchange="filterLUTCategory('all')">All LUTs<small>5</small></label>
-              <label class="ios-chip"><input type="radio" name="lutCat" onchange="filterLUTCategory('film')">Film Print</label>
-              <label class="ios-chip"><input type="radio" name="lutCat" onchange="filterLUTCategory('tech')">Log / Rec.709</label>
-            </div>
-
-            <div class="slider-block" style="padding-top:2px;padding-bottom:4px">
-              <div>
-                <div class="slider-header">
-                  <span>3D LUT Intensity</span>
-                  <span class="slider-val" id="valLutIntensity">100%</span>
-                </div>
-                <!-- iOS 26 Component 8: Slider -->
-                <div class="ios-slider">
-                  <input type="range" id="sliderLutIntensity" min="0" max="100" value="100" aria-label="3D LUT Intensity" oninput="updateParam('lutIntensity', this.value / 100)">
-                  <i class="ios-icon ios-icon--sun" style="--w:16px;--h:16px"></i>
-                </div>
-              </div>
-            </div>
-
-            <!-- iOS 26 Component 9: Grouped List -->
-            <div class="ios-list" style="padding: 4px 0 12px;">
+          <!-- TAB 1: BASICS (Apple Log, Exposure, WB, Highlights/Shadows/Whites/Blacks) -->
+          <div id="tabPaneBasics">
+            <div class="ios-list" style="padding: 6px 0 4px;">
               <section class="ios-list__section">
-                <div class="ios-list__group" id="mobileLutListGroup">
-                  <label class="ios-row" data-cat="tech">
-                    <input type="radio" name="mobileLutRadio" checked onchange="applyLUTPreset('rec709', 'Rec.709 Natural Neutral')">
+                <div class="ios-list__group">
+                  <div class="ios-row">
                     <div class="ios-row__body">
-                      <span class="ios-row__title">Rec.709 Natural Neutral</span>
-                      <span class="ios-row__detail">32^3</span>
-                      <i class="ios-row__check ios-icon ios-icon--checkmark" style="--w:17px;--h:16px"></i>
+                      <span class="ios-row__title">Apple Log to Rec.709 Transform</span>
+                      <input class="ios-switch" type="checkbox" role="switch" aria-label="Apple Log to Rec.709" checked onchange="togglePipelineFlag('appleLog', this.checked)">
                     </div>
-                  </label>
-                  <label class="ios-row" data-cat="film">
-                    <input type="radio" name="mobileLutRadio" onchange="applyLUTPreset('kodak2383', 'Kodak 2383 Film Print')">
+                  </div>
+                  <div class="ios-row">
                     <div class="ios-row__body">
-                      <span class="ios-row__title">Kodak 2383 Film Print</span>
-                      <span class="ios-row__detail">32^3</span>
-                      <i class="ios-row__check ios-icon ios-icon--checkmark" style="--w:17px;--h:16px"></i>
+                      <span class="ios-row__title">HDR10 / Dolby Vision Tonemap</span>
+                      <input class="ios-switch" type="checkbox" role="switch" aria-label="HDR to Rec.709 Tonemap" checked onchange="togglePipelineFlag('hdrTonemap', this.checked)">
                     </div>
-                  </label>
-                  <label class="ios-row" data-cat="film">
-                    <input type="radio" name="mobileLutRadio" onchange="applyLUTPreset('tungsten', 'Cine Tungsten & Amber')">
-                    <div class="ios-row__body">
-                      <span class="ios-row__title">Cine Tungsten & Amber</span>
-                      <span class="ios-row__detail">32^3</span>
-                      <i class="ios-row__check ios-icon ios-icon--checkmark" style="--w:17px;--h:16px"></i>
-                    </div>
-                  </label>
-                  <label class="ios-row" data-cat="film">
-                    <input type="radio" name="mobileLutRadio" onchange="applyLUTPreset('bleach', 'Silver Bleach Retention')">
-                    <div class="ios-row__body">
-                      <span class="ios-row__title">Silver Bleach Retention</span>
-                      <span class="ios-row__detail">32^3</span>
-                      <i class="ios-row__check ios-icon ios-icon--checkmark" style="--w:17px;--h:16px"></i>
-                    </div>
-                  </label>
-                  <label class="ios-row" data-cat="tech">
-                    <input type="radio" name="mobileLutRadio" onchange="applyLUTPreset('applelog', 'Apple Log to Rec.709')">
-                    <div class="ios-row__body">
-                      <span class="ios-row__title">Apple Log to Rec.709 SDR</span>
-                      <span class="ios-row__detail">32^3</span>
-                      <i class="ios-row__check ios-icon ios-icon--checkmark" style="--w:17px;--h:16px"></i>
-                    </div>
-                  </label>
+                  </div>
                 </div>
               </section>
             </div>
-          </div>
 
-          <!-- TAB 2: 3-Way Color Wheels (10% @samdesain Fallback) -->
-          <div id="tabPaneWheels" class="hidden-pane">
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 14px 0;">
-              <span style="font-family:var(--mono-font);font-size:11px;opacity:0.75">3-WAY COLOR CORRECTOR</span>
-              <button type="button" class="ios-button" data-variant="gray" data-size="sm" onclick="zeroColorWheels()">Zero Wheels</button>
-            </div>
-            <div class="wheels-grid">
-              <!-- Lift Wheel -->
-              <div class="wheel-card">
-                <span class="wheel-label">LIFT (SHADOW)</span>
-                <div class="wheel-ring" id="wheelLift" data-wheel="lift" role="slider" aria-label="Lift Shadows Color Wheel" tabindex="0">
-                  <div class="wheel-puck" id="puckLift"></div>
-                </div>
-                <span class="wheel-readout" id="readoutLift">R:+0.00 B:+0.00</span>
-                <div class="ios-slider" style="width:100%">
-                  <input type="range" min="-50" max="50" value="0" aria-label="Lift Master Luminance" oninput="updateWheelLuma('lift', this.value / 100)">
-                </div>
-              </div>
-
-              <!-- Gamma Wheel -->
-              <div class="wheel-card">
-                <span class="wheel-label">GAMMA (MID)</span>
-                <div class="wheel-ring" id="wheelGamma" data-wheel="gamma" role="slider" aria-label="Gamma Midtones Color Wheel" tabindex="0">
-                  <div class="wheel-puck" id="puckGamma"></div>
-                </div>
-                <span class="wheel-readout" id="readoutGamma">R:+0.00 B:+0.00</span>
-                <div class="ios-slider" style="width:100%">
-                  <input type="range" min="-50" max="50" value="0" aria-label="Gamma Master Luminance" oninput="updateWheelLuma('gamma', this.value / 100)">
-                </div>
-              </div>
-
-              <!-- Gain Wheel -->
-              <div class="wheel-card">
-                <span class="wheel-label">GAIN (HIGH)</span>
-                <div class="wheel-ring" id="wheelGain" data-wheel="gain" role="slider" aria-label="Gain Highlights Color Wheel" tabindex="0">
-                  <div class="wheel-puck" id="puckGain"></div>
-                </div>
-                <span class="wheel-readout" id="readoutGain">R:+0.00 B:+0.00</span>
-                <div class="ios-slider" style="width:100%">
-                  <input type="range" min="-50" max="50" value="0" aria-label="Gain Master Luminance" oninput="updateWheelLuma('gain', this.value / 100)">
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- TAB 3: Primary Grading Sliders (iOS 26 Sliders & Switches) -->
-          <div id="tabPaneSliders" class="hidden-pane">
             <div class="slider-block">
               <div>
-                <div class="slider-header"><span>Exposure (CIExposureAdjust)</span><span class="slider-val" id="valExposure">+0.00 EV</span></div>
+                <div class="slider-header"><span>Exposure (EV)</span><span class="slider-val" id="valExposure">+0.00 EV</span></div>
                 <div class="ios-slider"><input type="range" id="sliderExposure" min="-200" max="200" value="0" aria-label="Exposure EV" oninput="updateParam('exposure', this.value / 100)"><i class="ios-icon ios-icon--sun" style="--w:16px;--h:16px"></i></div>
               </div>
               <div>
-                <div class="slider-header"><span>S-Curve Contrast</span><span class="slider-val" id="valContrast">1.00x</span></div>
-                <div class="ios-slider"><input type="range" id="sliderContrast" min="50" max="150" value="100" aria-label="S-Curve Contrast" oninput="updateParam('contrast', this.value / 100)"></div>
+                <div class="slider-header"><span>Contrast & S-Curve</span><span class="slider-val" id="valContrast">1.00x</span></div>
+                <div class="ios-slider"><input type="range" id="sliderContrast" min="50" max="150" value="100" aria-label="Contrast" oninput="updateParam('contrast', this.value / 100)"></div>
               </div>
               <div>
-                <div class="slider-header"><span>White Balance Temp</span><span class="slider-val" id="valTemp">6500K</span></div>
-                <div class="ios-slider" style="--fill:var(--ios-orange)"><input type="range" id="sliderTemp" min="3200" max="9800" value="6500" aria-label="Color Temperature Kelvin" oninput="updateParam('temperature', Number(this.value))"></div>
+                <div class="slider-header"><span>White Balance Temp (K)</span><span class="slider-val" id="valTemp">6500K</span></div>
+                <div class="ios-slider" style="--fill:var(--ios-orange)"><input type="range" id="sliderTemp" min="3200" max="9800" value="6500" aria-label="Color Temperature" oninput="updateParam('temperature', Number(this.value))"></div>
               </div>
               <div>
                 <div class="slider-header"><span>Tint (Green / Magenta)</span><span class="slider-val" id="valTint">+0</span></div>
                 <div class="ios-slider" style="--fill:var(--ios-green)"><input type="range" id="sliderTint" min="-100" max="100" value="0" aria-label="Tint Shift" oninput="updateParam('tint', Number(this.value))"></div>
               </div>
               <div>
-                <div class="slider-header"><span>Skin-Safe Vibrance</span><span class="slider-val" id="valVibrance">+0.00</span></div>
-                <div class="ios-slider"><input type="range" id="sliderVibrance" min="-100" max="100" value="0" aria-label="Skin-Safe Vibrance" oninput="updateParam('vibrance', this.value / 100)"></div>
+                <div class="slider-header"><span>Highlights Recovery</span><span class="slider-val" id="valHighlights">+0.00</span></div>
+                <div class="ios-slider"><input type="range" id="sliderHighlights" min="-100" max="100" value="0" aria-label="Highlights" oninput="updateParam('highlights', this.value / 100)"></div>
               </div>
               <div>
-                <div class="slider-header"><span>Saturation</span><span class="slider-val" id="valSaturation">1.00x</span></div>
+                <div class="slider-header"><span>Shadows Lift</span><span class="slider-val" id="valShadows">+0.00</span></div>
+                <div class="ios-slider"><input type="range" id="sliderShadows" min="-100" max="100" value="0" aria-label="Shadows" oninput="updateParam('shadows', this.value / 100)"></div>
+              </div>
+              <div>
+                <div class="slider-header"><span>Whites / Blacks Point</span><span class="slider-val" id="valWhites">+0.00</span></div>
+                <div class="ios-slider"><input type="range" id="sliderWhites" min="-100" max="100" value="0" aria-label="Whites" oninput="updateParam('whites', this.value / 100)"></div>
+              </div>
+              <div>
+                <div class="slider-header"><span>Saturation & Vibrance</span><span class="slider-val" id="valSaturation">1.00x</span></div>
                 <div class="ios-slider"><input type="range" id="sliderSaturation" min="0" max="200" value="100" aria-label="Saturation" oninput="updateParam('saturation', this.value / 100)"></div>
               </div>
             </div>
+          </div>
 
-            <div class="ios-list" style="padding: 0 0 12px;">
+          <!-- TAB 2: 4-CHANNEL PARAMETRIC TONE CURVES (Master Luma, R, G, B) -->
+          <div id="tabPaneCurves" class="hidden-pane">
+            <div class="ios-chips" style="padding: 8px 14px 4px;">
+              <label class="ios-chip"><input type="radio" name="curveChan" checked onchange="selectCurveChannel('master')">Master (Luma)</label>
+              <label class="ios-chip"><input type="radio" name="curveChan" onchange="selectCurveChannel('r')">Red</label>
+              <label class="ios-chip"><input type="radio" name="curveChan" onchange="selectCurveChannel('g')">Green</label>
+              <label class="ios-chip"><input type="radio" name="curveChan" onchange="selectCurveChannel('b')">Blue</label>
+            </div>
+            <div class="curve-box-wrap">
+              <canvas id="curveEditorCanvas" width="320" height="150" aria-label="Interactive 5-point Bezier Tone Curve Editor"></canvas>
+              <div style="display:flex;gap:6px">
+                <button type="button" class="ios-button" data-variant="gray" data-size="sm" style="flex:1" onclick="applyCurvePreset('matte')">Matte Faded Blacks</button>
+                <button type="button" class="ios-button" data-variant="gray" data-size="sm" style="flex:1" onclick="applyCurvePreset('scurve')">Film S-Curve</button>
+                <button type="button" class="ios-button" data-variant="plain" data-size="sm" onclick="applyCurvePreset('reset')">Reset</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 3: 8-CHANNEL HSL WARPER + SKIN TONE PROTECTION LOCK -->
+          <div id="tabPaneHsl" class="hidden-pane">
+            <div class="ios-list" style="padding: 6px 0 4px;">
               <section class="ios-list__section">
                 <div class="ios-list__group">
                   <div class="ios-row">
                     <div class="ios-row__body">
-                      <span class="ios-row__title">HDR PQ/HLG to Rec.709 Tonemap</span>
-                      <input class="ios-switch" type="checkbox" role="switch" aria-label="HDR to Rec.709 Tonemap" checked onchange="togglePipelineFlag('hdrTonemap', this.checked)">
+                      <span class="ios-row__title">Skin Tone Protection Lock</span>
+                      <input class="ios-switch" type="checkbox" role="switch" aria-label="Skin Tone Protection Lock" checked onchange="togglePipelineFlag('skinLock', this.checked)">
                     </div>
                   </div>
+                </div>
+              </section>
+            </div>
+
+            <div class="ios-chips" style="padding: 6px 14px;">
+              <label class="ios-chip"><input type="radio" name="hslChan" onchange="selectHSLBand('red')">Red</label>
+              <label class="ios-chip"><input type="radio" name="hslChan" checked onchange="selectHSLBand('orange')">Orange (Skin)</label>
+              <label class="ios-chip"><input type="radio" name="hslChan" onchange="selectHSLBand('yellow')">Yellow</label>
+              <label class="ios-chip"><input type="radio" name="hslChan" onchange="selectHSLBand('green')">Green</label>
+              <label class="ios-chip"><input type="radio" name="hslChan" onchange="selectHSLBand('cyan')">Cyan</label>
+              <label class="ios-chip"><input type="radio" name="hslChan" onchange="selectHSLBand('blue')">Blue</label>
+              <label class="ios-chip"><input type="radio" name="hslChan" onchange="selectHSLBand('purple')">Purple</label>
+              <label class="ios-chip"><input type="radio" name="hslChan" onchange="selectHSLBand('magenta')">Magenta</label>
+            </div>
+
+            <div class="slider-block">
+              <div>
+                <div class="slider-header"><span id="lblHslHue">Orange Hue Shift</span><span class="slider-val" id="valHslHue">+0.00</span></div>
+                <div class="ios-slider"><input type="range" id="sliderHslHue" min="-100" max="100" value="0" aria-label="HSL Hue Shift" oninput="updateHSLValue('hue', this.value / 100)"></div>
+              </div>
+              <div>
+                <div class="slider-header"><span id="lblHslSat">Orange Saturation</span><span class="slider-val" id="valHslSat">+0.00</span></div>
+                <div class="ios-slider"><input type="range" id="sliderHslSat" min="-100" max="100" value="0" aria-label="HSL Saturation" oninput="updateHSLValue('sat', this.value / 100)"></div>
+              </div>
+              <div>
+                <div class="slider-header"><span id="lblHslLum">Orange Luminance</span><span class="slider-val" id="valHslLum">+0.00</span></div>
+                <div class="ios-slider"><input type="range" id="sliderHslLum" min="-100" max="100" value="0" aria-label="HSL Luminance" oninput="updateHSLValue('lum', this.value / 100)"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 4: 3-WAY COLOR WHEELS (LIFT / GAMMA / GAIN) -->
+          <div id="tabPaneWheels" class="hidden-pane">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 14px 0;">
+              <span style="font-family:var(--mono-font);font-size:11px;opacity:0.75">3-WAY COLOR WHEELS</span>
+              <button type="button" class="ios-button" data-variant="gray" data-size="sm" onclick="zeroColorWheels()">Zero Wheels</button>
+            </div>
+            <div class="wheels-grid">
+              <div class="wheel-card">
+                <span class="wheel-label">LIFT (SHADOW)</span>
+                <div class="wheel-ring" id="wheelLift" data-wheel="lift" role="slider" aria-label="Lift Shadows Wheel" tabindex="0">
+                  <div class="wheel-puck" id="puckLift"></div>
+                </div>
+                <span class="wheel-readout" id="readoutLift">R:+0.00 B:+0.00</span>
+                <div class="ios-slider" style="width:100%"><input type="range" min="-50" max="50" value="0" aria-label="Lift Master Luma" oninput="updateWheelLuma('lift', this.value / 100)"></div>
+              </div>
+
+              <div class="wheel-card">
+                <span class="wheel-label">GAMMA (MID)</span>
+                <div class="wheel-ring" id="wheelGamma" data-wheel="gamma" role="slider" aria-label="Gamma Midtones Wheel" tabindex="0">
+                  <div class="wheel-puck" id="puckGamma"></div>
+                </div>
+                <span class="wheel-readout" id="readoutGamma">R:+0.00 B:+0.00</span>
+                <div class="ios-slider" style="width:100%"><input type="range" min="-50" max="50" value="0" aria-label="Gamma Master Luma" oninput="updateWheelLuma('gamma', this.value / 100)"></div>
+              </div>
+
+              <div class="wheel-card">
+                <span class="wheel-label">GAIN (HIGH)</span>
+                <div class="wheel-ring" id="wheelGain" data-wheel="gain" role="slider" aria-label="Gain Highlights Wheel" tabindex="0">
+                  <div class="wheel-puck" id="puckGain"></div>
+                </div>
+                <span class="wheel-readout" id="readoutGain">R:+0.00 B:+0.00</span>
+                <div class="ios-slider" style="width:100%"><input type="range" min="-50" max="50" value="0" aria-label="Gain Master Luma" oninput="updateWheelLuma('gain', this.value / 100)"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 5: FILM EMULATION ENGINE (Halation, Procedural Grain, Anti-Banding Dither) -->
+          <div id="tabPaneFilm" class="hidden-pane">
+            <div class="slider-block">
+              <div>
+                <div class="slider-header"><span>Halation (Warm Edge Scatter)</span><span class="slider-val" id="valHalation">0%</span></div>
+                <div class="ios-slider" style="--fill:var(--ios-red)"><input type="range" id="sliderHalation" min="0" max="100" value="0" aria-label="Halation Intensity" oninput="updateParam('halation', this.value / 100)"></div>
+              </div>
+              <div>
+                <div class="slider-header"><span>Dynamic Film Grain (Metal Noise)</span><span class="slider-val" id="valGrain">0%</span></div>
+                <div class="ios-slider"><input type="range" id="sliderGrain" min="0" max="100" value="0" aria-label="Procedural Film Grain" oninput="updateParam('grain', this.value / 100)"></div>
+              </div>
+              <div>
+                <div class="slider-header"><span>Film Grain Size (16mm / 35mm)</span><span class="slider-val" id="valGrainSize">1.25x</span></div>
+                <div class="ios-slider"><input type="range" id="sliderGrainSize" min="50" max="300" value="125" aria-label="Film Grain Size" oninput="updateParam('grainSize', this.value / 100)"></div>
+              </div>
+            </div>
+
+            <div class="ios-list" style="padding: 4px 0 10px;">
+              <section class="ios-list__section">
+                <div class="ios-list__group">
                   <div class="ios-row">
                     <div class="ios-row__body">
                       <span class="ios-row__title">Anti-Banding Dither (0.5 LSB)</span>
-                      <input class="ios-switch" type="checkbox" role="switch" aria-label="Anti-Banding Triangular PDF Dither" checked onchange="togglePipelineFlag('dither', this.checked)">
+                      <input class="ios-switch" type="checkbox" role="switch" aria-label="Anti-Banding Dither" checked onchange="togglePipelineFlag('dither', this.checked)">
                     </div>
                   </div>
                 </div>
@@ -818,27 +903,31 @@
             </div>
           </div>
 
-          <!-- TAB 4: Social Media Master Export Configuration -->
-          <div id="tabPaneExport" class="hidden-pane">
-            <div class="ios-chips" style="padding: 8px 14px;">
-              <label class="ios-chip"><input type="radio" name="aspectChip" checked onchange="setAspectPreset('1080x1920 (9:16)')">9:16 Reels/TikTok</label>
-              <label class="ios-chip"><input type="radio" name="aspectChip" onchange="setAspectPreset('1080x1350 (4:5)')">4:5 Feed</label>
-              <label class="ios-chip"><input type="radio" name="aspectChip" onchange="setAspectPreset('1080x1080 (1:1)')">1:1 Square</label>
+          <!-- TAB 6: 3D LUTs, COPY/PASTE GRADE & BATCH EXPORT -->
+          <div id="tabPaneLuts" class="hidden-pane">
+            <div class="slider-block" style="padding-bottom:2px">
+              <div>
+                <div class="slider-header"><span>3D LUT Opacity / Intensity</span><span class="slider-val" id="valLutIntensity">100%</span></div>
+                <div class="ios-slider"><input type="range" id="sliderLutIntensity" min="0" max="100" value="100" aria-label="LUT Intensity" oninput="updateParam('lutIntensity', this.value / 100)"></div>
+              </div>
             </div>
 
-            <div class="ios-list" style="padding: 4px 0 12px;">
+            <div class="ios-list" style="padding: 4px 0 8px;">
               <section class="ios-list__section">
-                <h2 class="ios-list__header">Rec. 709 Social Encoder Specs</h2>
-                <div class="ios-list__group">
-                  <div class="ios-row"><div class="ios-row__body"><span class="ios-row__title">Video Codec</span><span class="ios-row__detail">H.264 High L4.2</span></div></div>
-                  <div class="ios-row"><div class="ios-row__body"><span class="ios-row__title">Color Primaries</span><span class="ios-row__detail">ITU-R BT.709-2</span></div></div>
-                  <div class="ios-row"><div class="ios-row__body"><span class="ios-row__title">CFR Target Bitrate</span><span class="ios-row__detail" id="detailBitrate">20 Mbps (Max 24M)</span></div></div>
+                <div class="ios-list__group" id="mobileLutListGroup">
+                  <label class="ios-row" data-cat="tech"><input type="radio" name="mobileLutRadio" checked onchange="applyLUTPreset('rec709', 'Rec.709 Natural Neutral')"><div class="ios-row__body"><span class="ios-row__title">Rec.709 Natural Neutral</span><span class="ios-row__detail">32^3</span><i class="ios-row__check ios-icon ios-icon--checkmark" style="--w:17px;--h:16px"></i></div></label>
+                  <label class="ios-row" data-cat="film"><input type="radio" name="mobileLutRadio" onchange="applyLUTPreset('kodak2383', 'Kodak 2383 Film Print')"><div class="ios-row__body"><span class="ios-row__title">Kodak 2383 Film Print</span><span class="ios-row__detail">32^3</span><i class="ios-row__check ios-icon ios-icon--checkmark" style="--w:17px;--h:16px"></i></div></label>
+                  <label class="ios-row" data-cat="film"><input type="radio" name="mobileLutRadio" onchange="applyLUTPreset('tungsten', 'Cine Tungsten & Amber')"><div class="ios-row__body"><span class="ios-row__title">Cine Tungsten & Amber</span><span class="ios-row__detail">32^3</span><i class="ios-row__check ios-icon ios-icon--checkmark" style="--w:17px;--h:16px"></i></div></label>
+                  <label class="ios-row" data-cat="film"><input type="radio" name="mobileLutRadio" onchange="applyLUTPreset('bleach', 'Silver Bleach Retention')"><div class="ios-row__body"><span class="ios-row__title">Silver Bleach Retention</span><span class="ios-row__detail">32^3</span><i class="ios-row__check ios-icon ios-icon--checkmark" style="--w:17px;--h:16px"></i></div></label>
+                  <label class="ios-row" data-cat="tech"><input type="radio" name="mobileLutRadio" onchange="applyLUTPreset('applelog', 'Apple Log to Rec.709 SDR')"><div class="ios-row__body"><span class="ios-row__title">Apple Log to Rec.709 SDR</span><span class="ios-row__detail">32^3</span><i class="ios-row__check ios-icon ios-icon--checkmark" style="--w:17px;--h:16px"></i></div></label>
                 </div>
               </section>
             </div>
 
-            <div style="padding: 0 16px 14px;">
-              <button type="button" class="ios-button" data-variant="filled" data-size="lg" data-block onclick="openExportSheet()">Render Rec.709 Master</button>
+            <div style="padding: 0 14px 12px; display:flex; gap:8px; flex-wrap:wrap;">
+              <button type="button" class="ios-button" data-variant="gray" data-size="sm" style="flex:1" onclick="copyGrade()">Copy Grade</button>
+              <button type="button" class="ios-button" data-variant="tinted" data-size="sm" style="flex:1" onclick="pasteGrade()">Paste Grade</button>
+              <button type="button" class="ios-button" data-variant="filled" data-size="sm" style="width:100%" onclick="openExportSheet()">Batch Photo / Video Export</button>
             </div>
           </div>
         </aside>
@@ -847,15 +936,15 @@
       <!-- Keyboard Shortcut Footer -->
       <div class="shortcut-hint-bar">
         <span>[Space] Play/Pause</span>
-        <span>[\] Split Before/After</span>
-        <span>[E] Export Sheet</span>
-        <span>[R] Reset</span>
+        <span>[\] A/B Split</span>
+        <span>[C/V] Copy/Paste Grade</span>
+        <span>[E] Batch Export</span>
       </div>
 
-      <!-- iOS 26 Component 10: Sheet (Offline Master Export Progress) -->
+      <!-- iOS 26 Sheet: Offline Batch Video & Photo Export -->
       <div id="exportSheetLayer" class="ios-layer" style="display:none">
         <a class="ios-layer__scrim" href="#_" aria-label="Dismiss Export Sheet" onclick="closeOverlays(event)"></a>
-        <div class="ios-sheet" data-detent="medium" role="dialog" aria-label="Exporting Rec.709 Master">
+        <div class="ios-sheet" data-detent="medium" role="dialog" aria-label="Batch Master Export">
           <span class="ios-sheet__grabber"></span>
           <div class="ios-sheet__toolbar">
             <div class="ios-sheet__leading">
@@ -863,7 +952,7 @@
                 <i class="ios-icon ios-icon--xmark"></i>
               </button>
             </div>
-            <h2 class="ios-sheet__title">Master Export (Rec. 709)</h2>
+            <h2 class="ios-sheet__title">Batch Video & Photo Export</h2>
             <div class="ios-sheet__trailing">
               <button type="button" class="ios-barbutton" data-variant="prominent" aria-label="Done" onclick="closeOverlays(event)">
                 <i class="ios-icon ios-icon--checkmark"></i>
@@ -872,18 +961,17 @@
           </div>
           <div class="ios-sheet__body" style="padding: 16px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-              <span style="font-size:13px;font-weight:600" id="exportStatusLabel">Encoding H.264 High Profile L4.2 (CFR)...</span>
+              <span style="font-size:13px;font-weight:600" id="exportStatusLabel">Batch Rendering Rec.709 H.264 & ProRAW JPEG...</span>
               <span style="font-family:var(--mono-font);font-size:13px" id="exportPercentText">68%</span>
             </div>
-            <!-- iOS 26 Component 11: Progress Bar -->
             <div class="ios-progress" id="exportProgressBar" style="--value:68"><i></i></div>
 
             <div class="ios-list" style="padding:14px 0 0">
               <section class="ios-list__section">
                 <div class="ios-list__group">
-                  <div class="ios-row"><div class="ios-row__body"><span class="ios-row__title">Color Tags</span><span class="ios-row__detail">ITU_R_709_2 SDR</span></div></div>
-                  <div class="ios-row"><div class="ios-row__body"><span class="ios-row__title">Micro-Dither</span><span class="ios-row__detail">0.5 LSB Triangular PDF</span></div></div>
-                  <div class="ios-row"><div class="ios-row__body"><span class="ios-row__title">Zero CPU Copy</span><span class="ios-row__detail">MTLTexture -> AVAssetWriter</span></div></div>
+                  <div class="ios-row"><div class="ios-row__body"><span class="ios-row__title">Video Codec</span><span class="ios-row__detail">H.264 High L4.2 (20 Mbps CFR)</span></div></div>
+                  <div class="ios-row"><div class="ios-row__body"><span class="ios-row__title">Color Tags</span><span class="ios-row__detail">ITU_R_709_2 Primaries/Matrix</span></div></div>
+                  <div class="ios-row"><div class="ios-row__body"><span class="ios-row__title">Photo Output</span><span class="ios-row__detail">sRGB / Rec.709 JPEG & 16-Bit TIFF</span></div></div>
                 </div>
               </section>
             </div>
@@ -891,13 +979,13 @@
         </div>
       </div>
 
-      <!-- iOS 26 Component 12: Alert (Error State Validation R-27) -->
+      <!-- iOS 26 Alert: Error State Validation -->
       <div id="errorAlertLayer" class="ios-layer ios-alert-layer" style="display:none">
         <a class="ios-layer__scrim" href="#_" aria-label="Dismiss Alert" onclick="closeOverlays(event)"></a>
         <div class="ios-alert" role="alertdialog" aria-labelledby="alertTitle">
           <div class="ios-alert__text">
             <h2 class="ios-alert__title" id="alertTitle">Invalid .cube LUT Format</h2>
-            <p class="ios-alert__message" id="alertMessage">Missing LUT_3D_SIZE declaration or triplet count mismatch. Ensure the .cube file contains N^3 RGB floating-point triplets (dimension 2 to 64).</p>
+            <p class="ios-alert__message" id="alertMessage">Missing LUT_3D_SIZE declaration or triplet count mismatch. Ensure the .cube file contains N^3 RGB floating-point triplets (dimension 2 to 65).</p>
           </div>
           <div class="ios-alert__actions" data-layout="side">
             <button type="button" class="ios-alert__action" data-role="cancel" onclick="closeOverlays(event)">Dismiss</button>
@@ -906,7 +994,7 @@
         </div>
       </div>
 
-      <!-- iOS 26 Component 13: Home Indicator -->
+      <!-- iOS 26 Home Indicator -->
       <div class="ios-home-indicator"></div>
     </div>
   </main>
@@ -915,12 +1003,18 @@
     const state = {
       device: 'iphone',
       dark: true,
+      mediaKind: 'video', // 'video' | 'photo'
       uiState: 'active',
       playing: true,
       frameTick: 0,
       splitActive: true,
       splitX: 0.55,
       bypass: false,
+      scopeMode: 'waveform', // 'waveform' | 'vectorscope' | 'histogram'
+      appleLog: true,
+      hdrTonemap: true,
+      skinLock: true,
+      dither: true,
       lutPreset: 'rec709',
       lutName: 'Rec.709 Natural',
       lutIntensity: 1.0,
@@ -928,20 +1022,46 @@
       contrast: 1.0,
       temperature: 6500,
       tint: 0,
-      vibrance: 0.0,
+      highlights: 0.0,
+      shadows: 0.0,
+      whites: 0.0,
       saturation: 1.0,
-      hdrTonemap: true,
-      dither: true,
+      halation: 0.0,
+      grain: 0.0,
+      grainSize: 1.25,
+      activeCurveChannel: 'master',
+      curves: {
+        master: [0.0, 0.25, 0.50, 0.75, 1.0],
+        r: [0.0, 0.25, 0.50, 0.75, 1.0],
+        g: [0.0, 0.25, 0.50, 0.75, 1.0],
+        b: [0.0, 0.25, 0.50, 0.75, 1.0]
+      },
+      activeHSLBand: 'orange',
+      hsl: {
+        red: { hue: 0, sat: 0, lum: 0 },
+        orange: { hue: 0, sat: 0, lum: 0 },
+        yellow: { hue: 0, sat: 0, lum: 0 },
+        green: { hue: 0, sat: 0, lum: 0 },
+        cyan: { hue: 0, sat: 0, lum: 0 },
+        blue: { hue: 0, sat: 0, lum: 0 },
+        purple: { hue: 0, sat: 0, lum: 0 },
+        magenta: { hue: 0, sat: 0, lum: 0 }
+      },
       wheels: {
         lift: { r: 0, b: 0, luma: 0 },
         gamma: { r: 0, b: 0, luma: 0 },
         gain: { r: 0, b: 0, luma: 0 }
       },
+      clipboardRecipe: null,
       customCubeTable: null
     };
 
     const canvas = document.getElementById('gradingCanvas');
     const ctx = canvas.getContext('2d');
+    const scopeCanvas = document.getElementById('scopeCanvas');
+    const scopeCtx = scopeCanvas.getContext('2d');
+    const curveCanvas = document.getElementById('curveEditorCanvas');
+    const curveCtx = curveCanvas.getContext('2d');
     let exportTimer = null;
 
     function showHUD(message) {
@@ -961,18 +1081,17 @@
       document.getElementById('btnDeviceIphone').setAttribute('aria-pressed', mode === 'iphone');
       document.getElementById('btnDeviceIpad').setAttribute('aria-pressed', mode === 'ipad');
       document.getElementById('btnDeviceMac').setAttribute('aria-pressed', mode === 'mac');
-
-      // On iPad/Mac, show Wheels + Sliders simultaneously inside the right inspector
-      if (mode === 'ipad' || mode === 'mac') {
-        document.getElementById('tabPaneLuts').classList.add('hidden-pane');
-        document.getElementById('tabPaneWheels').classList.remove('hidden-pane');
-        document.getElementById('tabPaneSliders').classList.remove('hidden-pane');
-        document.getElementById('tabPaneExport').classList.remove('hidden-pane');
-      } else {
-        const checkedRadio = document.querySelector('input[name="deckTab"]:checked');
-        switchDeckTab(checkedRadio ? checkedRadio.value : 'luts');
-      }
       showHUD('Switched layout: ' + mode.toUpperCase());
+    }
+
+    function setMediaKind(kind) {
+      state.mediaKind = kind;
+      document.getElementById('btnMediaVideo').setAttribute('aria-pressed', kind === 'video');
+      document.getElementById('btnMediaPhoto').setAttribute('aria-pressed', kind === 'photo');
+      document.getElementById('transportGroup').style.display = (kind === 'video') ? '' : 'none';
+      document.getElementById('timecodeReadout').textContent = (kind === 'video') ? '00:00:04:18' : 'ProRAW 48MP DNG';
+      document.getElementById('badgeMediaMode').textContent = (kind === 'video') ? 'VIDEO : APPLE LOG -> Rec.709' : 'PHOTO : ProRAW DNG Linear';
+      showHUD(kind === 'video' ? 'Switched to Video Mode (60fps)' : 'Switched to Still Photo Mode (ProRAW/DNG)');
     }
 
     function toggleTheme() {
@@ -994,38 +1113,44 @@
 
     function setUIState(mode) {
       state.uiState = mode;
-      document.getElementById('btnStateActive').setAttribute('aria-pressed', mode === 'active');
       document.getElementById('btnStateEmpty').setAttribute('aria-pressed', mode === 'empty');
       document.getElementById('btnStateExport').setAttribute('aria-pressed', 'false');
       document.getElementById('btnStateError').setAttribute('aria-pressed', 'false');
-
       closeOverlays();
-      const emptyEl = document.getElementById('emptyStateContainer');
-      const activeEl = document.getElementById('activeWorkspace');
-      if (mode === 'empty') {
-        emptyEl.classList.remove('hidden-pane');
-        activeEl.classList.add('hidden-pane');
-      } else {
-        emptyEl.classList.add('hidden-pane');
-        activeEl.classList.remove('hidden-pane');
-      }
+      document.getElementById('emptyStateContainer').classList.toggle('hidden-pane', mode !== 'empty');
+      document.getElementById('activeWorkspace').classList.toggle('hidden-pane', mode === 'empty');
     }
 
     function switchDeckTab(tab) {
-      if (state.device === 'ipad' || state.device === 'mac') {
-        // In wide split view, all panels remain accessible or scroll into view
-        const map = { luts: 'tabPaneLuts', wheels: 'tabPaneWheels', sliders: 'tabPaneSliders', export: 'tabPaneExport' };
-        ['tabPaneLuts', 'tabPaneWheels', 'tabPaneSliders', 'tabPaneExport'].forEach(id => {
-          document.getElementById(id).classList.remove('hidden-pane');
-        });
-        const target = document.getElementById(map[tab]);
-        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        return;
-      }
-      document.getElementById('tabPaneLuts').classList.toggle('hidden-pane', tab !== 'luts');
-      document.getElementById('tabPaneWheels').classList.toggle('hidden-pane', tab !== 'wheels');
-      document.getElementById('tabPaneSliders').classList.toggle('hidden-pane', tab !== 'sliders');
-      document.getElementById('tabPaneExport').classList.toggle('hidden-pane', tab !== 'export');
+      const map = {
+        basics: 'tabPaneBasics',
+        curves: 'tabPaneCurves',
+        hsl: 'tabPaneHsl',
+        wheels: 'tabPaneWheels',
+        film: 'tabPaneFilm',
+        luts: 'tabPaneLuts'
+      };
+      Object.entries(map).forEach(([k, id]) => {
+        document.getElementById(id).classList.toggle('hidden-pane', k !== tab);
+      });
+      if (tab === 'curves') drawCurveEditor();
+    }
+
+    function cycleScopeMode() {
+      const order = ['waveform', 'vectorscope', 'histogram'];
+      const next = order[(order.indexOf(state.scopeMode) + 1) % order.length];
+      state.scopeMode = next;
+      const labels = {
+        waveform: 'WAVEFORM (0-100 IRE)',
+        vectorscope: 'VECTORSCOPE (SKIN LINE)',
+        histogram: 'RGB & LUMA HISTOGRAM'
+      };
+      document.getElementById('scopeTitleLabel').textContent = labels[next];
+    }
+
+    function toggleScopesBox() {
+      const box = document.getElementById('scopesFloatingBox');
+      box.style.display = (box.style.display === 'none') ? 'flex' : 'none';
     }
 
     function applyLUTPreset(code, label) {
@@ -1036,55 +1161,123 @@
       showHUD('Applied ' + label);
     }
 
-    function filterLUTCategory(cat) {
-      const rows = document.querySelectorAll('#mobileLutListGroup .ios-row');
-      rows.forEach(row => {
-        const rowCat = row.getAttribute('data-cat');
-        row.style.display = (cat === 'all' || rowCat === cat) ? '' : 'none';
-      });
-    }
-
     function filterLUTList(query) {
       const q = query.trim().toLowerCase();
-      const rows = document.querySelectorAll('.sidebar-luts .ios-row');
-      rows.forEach(r => {
-        const txt = r.textContent.toLowerCase();
-        r.style.display = txt.includes(q) ? '' : 'none';
+      document.querySelectorAll('.sidebar-luts .ios-row').forEach(r => {
+        r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
       });
     }
 
     function updateParam(key, val) {
       state[key] = val;
-      if (key === 'lutIntensity') {
-        document.getElementById('valLutIntensity').textContent = Math.round(val * 100) + '%';
-      } else if (key === 'exposure') {
-        document.getElementById('valExposure').textContent = (val >= 0 ? '+' : '') + val.toFixed(2) + ' EV';
-      } else if (key === 'contrast') {
-        document.getElementById('valContrast').textContent = val.toFixed(2) + 'x';
-      } else if (key === 'temperature') {
-        document.getElementById('valTemp').textContent = Math.round(val) + 'K';
-      } else if (key === 'tint') {
-        document.getElementById('valTint').textContent = (val >= 0 ? '+' : '') + Math.round(val);
-      } else if (key === 'vibrance') {
-        document.getElementById('valVibrance').textContent = (val >= 0 ? '+' : '') + val.toFixed(2);
-      } else if (key === 'saturation') {
-        document.getElementById('valSaturation').textContent = val.toFixed(2) + 'x';
-      }
+      if (key === 'lutIntensity') document.getElementById('valLutIntensity').textContent = Math.round(val * 100) + '%';
+      else if (key === 'exposure') document.getElementById('valExposure').textContent = (val >= 0 ? '+' : '') + val.toFixed(2) + ' EV';
+      else if (key === 'contrast') document.getElementById('valContrast').textContent = val.toFixed(2) + 'x';
+      else if (key === 'temperature') document.getElementById('valTemp').textContent = Math.round(val) + 'K';
+      else if (key === 'tint') document.getElementById('valTint').textContent = (val >= 0 ? '+' : '') + Math.round(val);
+      else if (key === 'highlights') document.getElementById('valHighlights').textContent = (val >= 0 ? '+' : '') + val.toFixed(2);
+      else if (key === 'shadows') document.getElementById('valShadows').textContent = (val >= 0 ? '+' : '') + val.toFixed(2);
+      else if (key === 'whites') document.getElementById('valWhites').textContent = (val >= 0 ? '+' : '') + val.toFixed(2);
+      else if (key === 'saturation') document.getElementById('valSaturation').textContent = val.toFixed(2) + 'x';
+      else if (key === 'halation') document.getElementById('valHalation').textContent = Math.round(val * 100) + '%';
+      else if (key === 'grain') document.getElementById('valGrain').textContent = Math.round(val * 100) + '%';
+      else if (key === 'grainSize') document.getElementById('valGrainSize').textContent = val.toFixed(2) + 'x';
     }
 
     function togglePipelineFlag(flag, checked) {
-      if (flag === 'hdrTonemap') {
-        state.hdrTonemap = checked;
-        document.getElementById('badgeColorSpace').textContent = checked ? 'HDR PQ -> Rec.709 SDR' : 'HDR PQ Raw (Unmapped)';
+      state[flag] = checked;
+      if (flag === 'skinLock') {
+        document.getElementById('badgeSkinLock').textContent = checked ? 'SKIN LOCK ON' : 'SKIN LOCK OFF';
       } else if (flag === 'dither') {
-        state.dither = checked;
         document.getElementById('badgeDither').textContent = checked ? 'DITHER 0.5 LSB' : 'DITHER OFF';
       }
+      showHUD(flag + ': ' + (checked ? 'ON' : 'OFF'));
     }
 
-    function setAspectPreset(label) {
-      document.getElementById('badgeResolution').textContent = label;
-      showHUD('Aspect Ratio: ' + label);
+    // 4-Channel Parametric Tone Curve Editor
+    function selectCurveChannel(ch) {
+      state.activeCurveChannel = ch;
+      drawCurveEditor();
+    }
+
+    function applyCurvePreset(preset) {
+      const ch = state.activeCurveChannel;
+      if (preset === 'matte') state.curves[ch] = [0.09, 0.27, 0.50, 0.76, 0.98];
+      else if (preset === 'scurve') state.curves[ch] = [0.00, 0.18, 0.50, 0.82, 1.00];
+      else state.curves[ch] = [0.00, 0.25, 0.50, 0.75, 1.00];
+      drawCurveEditor();
+      showHUD('Curve preset: ' + preset.toUpperCase());
+    }
+
+    function drawCurveEditor() {
+      const w = curveCanvas.width;
+      const h = curveCanvas.height;
+      curveCtx.clearRect(0, 0, w, h);
+
+      curveCtx.strokeStyle = 'rgba(255,255,255,0.12)';
+      curveCtx.lineWidth = 1;
+      [0.25, 0.5, 0.75].forEach(f => {
+        curveCtx.beginPath();
+        curveCtx.moveTo(w * f, 0); curveCtx.lineTo(w * f, h);
+        curveCtx.moveTo(0, h * f); curveCtx.lineTo(w, h * f);
+        curveCtx.stroke();
+      });
+      curveCtx.beginPath();
+      curveCtx.moveTo(0, h); curveCtx.lineTo(w, 0);
+      curveCtx.stroke();
+
+      const colors = { master: '#fafafa', r: '#ef4444', g: '#22c55e', b: '#3b82f6' };
+      const pts = state.curves[state.activeCurveChannel];
+      curveCtx.strokeStyle = colors[state.activeCurveChannel];
+      curveCtx.lineWidth = 2;
+      curveCtx.beginPath();
+      pts.forEach((py, i) => {
+        const x = (i / 4) * w;
+        const y = (1 - py) * h;
+        if (i === 0) curveCtx.moveTo(x, y);
+        else curveCtx.lineTo(x, y);
+      });
+      curveCtx.stroke();
+
+      pts.forEach((py, i) => {
+        const x = (i / 4) * w;
+        const y = (1 - py) * h;
+        curveCtx.fillStyle = '#f59e0b';
+        curveCtx.beginPath();
+        curveCtx.arc(x, y, 5, 0, Math.PI * 2);
+        curveCtx.fill();
+      });
+    }
+
+    curveCanvas.addEventListener('pointerdown', (e) => {
+      const rect = curveCanvas.getBoundingClientRect();
+      const nx = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      const ny = Math.max(0, Math.min(1, 1 - (e.clientY - rect.top) / rect.height));
+      const idx = Math.min(4, Math.max(0, Math.round(nx * 4)));
+      state.curves[state.activeCurveChannel][idx] = ny;
+      drawCurveEditor();
+    });
+
+    // 8-Channel HSL Warper
+    function selectHSLBand(band) {
+      state.activeHSLBand = band;
+      const cap = band.charAt(0).toUpperCase() + band.slice(1);
+      document.getElementById('lblHslHue').textContent = cap + ' Hue Shift';
+      document.getElementById('lblHslSat').textContent = cap + ' Saturation';
+      document.getElementById('lblHslLum').textContent = cap + ' Luminance';
+      const seg = state.hsl[band];
+      document.getElementById('sliderHslHue').value = seg.hue * 100;
+      document.getElementById('sliderHslSat').value = seg.sat * 100;
+      document.getElementById('sliderHslLum').value = seg.lum * 100;
+      document.getElementById('valHslHue').textContent = (seg.hue >= 0 ? '+' : '') + seg.hue.toFixed(2);
+      document.getElementById('valHslSat').textContent = (seg.sat >= 0 ? '+' : '') + seg.sat.toFixed(2);
+      document.getElementById('valHslLum').textContent = (seg.lum >= 0 ? '+' : '') + seg.lum.toFixed(2);
+    }
+
+    function updateHSLValue(prop, val) {
+      state.hsl[state.activeHSLBand][prop] = val;
+      const idMap = { hue: 'valHslHue', sat: 'valHslSat', lum: 'valHslLum' };
+      document.getElementById(idMap[prop]).textContent = (val >= 0 ? '+' : '') + val.toFixed(2);
     }
 
     function zeroColorWheels() {
@@ -1102,36 +1295,67 @@
       state.wheels[wheel].luma = val;
     }
 
+    // Copy Grade / Paste Grade
+    function copyGrade() {
+      state.clipboardRecipe = JSON.parse(JSON.stringify({
+        exposure: state.exposure,
+        contrast: state.contrast,
+        temperature: state.temperature,
+        tint: state.tint,
+        highlights: state.highlights,
+        shadows: state.shadows,
+        whites: state.whites,
+        saturation: state.saturation,
+        halation: state.halation,
+        grain: state.grain,
+        lutPreset: state.lutPreset,
+        lutName: state.lutName,
+        lutIntensity: state.lutIntensity,
+        curves: state.curves,
+        hsl: state.hsl,
+        wheels: state.wheels
+      }));
+      showHUD('Copied Grade Recipe to Clipboard');
+    }
+
+    function pasteGrade() {
+      if (!state.clipboardRecipe) {
+        showHUD('Clipboard is empty');
+        return;
+      }
+      Object.assign(state, JSON.parse(JSON.stringify(state.clipboardRecipe)));
+      document.getElementById('badgeActiveLUT').textContent = 'LUT: ' + state.lutName;
+      drawCurveEditor();
+      showHUD('Pasted Grade Recipe onto active media');
+    }
+
     function resetAllGrading() {
       state.exposure = 0.0;
       state.contrast = 1.0;
       state.temperature = 6500;
       state.tint = 0;
-      state.vibrance = 0.0;
+      state.highlights = 0.0;
+      state.shadows = 0.0;
+      state.whites = 0.0;
       state.saturation = 1.0;
+      state.halation = 0.0;
+      state.grain = 0.0;
       state.lutIntensity = 1.0;
-      document.getElementById('sliderExposure').value = 0;
-      document.getElementById('sliderContrast').value = 100;
-      document.getElementById('sliderTemp').value = 6500;
-      document.getElementById('sliderTint').value = 0;
-      document.getElementById('sliderVibrance').value = 0;
-      document.getElementById('sliderSaturation').value = 100;
-      document.getElementById('sliderLutIntensity').value = 100;
-      updateParam('exposure', 0);
-      updateParam('contrast', 1);
-      updateParam('temperature', 6500);
-      updateParam('tint', 0);
-      updateParam('vibrance', 0);
-      updateParam('saturation', 1);
-      updateParam('lutIntensity', 1);
+      state.curves = {
+        master: [0.0, 0.25, 0.50, 0.75, 1.0],
+        r: [0.0, 0.25, 0.50, 0.75, 1.0],
+        g: [0.0, 0.25, 0.50, 0.75, 1.0],
+        b: [0.0, 0.25, 0.50, 0.75, 1.0]
+      };
+      Object.keys(state.hsl).forEach(k => { state.hsl[k] = { hue: 0, sat: 0, lum: 0 }; });
       zeroColorWheels();
+      drawCurveEditor();
       showHUD('Reset all parameters to reference neutral');
     }
 
     function togglePlayback() {
       state.playing = !state.playing;
-      const icon = document.getElementById('playPauseIcon');
-      icon.className = state.playing ? 'ios-icon ios-icon--pause' : 'ios-icon ios-icon--play';
+      document.getElementById('playPauseIcon').className = state.playing ? 'ios-icon ios-icon--pause' : 'ios-icon ios-icon--play';
     }
 
     function stepFrame(delta) {
@@ -1142,46 +1366,37 @@
 
     function toggleSplitWipe() {
       state.splitActive = !state.splitActive;
-      const bar = document.getElementById('splitWipeBar');
-      bar.style.display = state.splitActive ? 'block' : 'none';
-      showHUD(state.splitActive ? 'Split Comparison Enabled' : 'Full Frame Graded View');
+      document.getElementById('splitWipeBar').style.display = state.splitActive ? 'block' : 'none';
+      showHUD(state.splitActive ? 'A/B Split Wipe Enabled' : 'Full Frame Graded View');
     }
 
-    function setBypass(flag) {
-      state.bypass = flag;
-    }
-
+    function setBypass(flag) { state.bypass = flag; }
     function toggleBypassClick() {
       state.bypass = !state.bypass;
-      showHUD(state.bypass ? 'Bypassed (Showing Original Log/HDR)' : 'Grading Active');
+      showHUD(state.bypass ? 'Bypassed (Original Media)' : 'Grading Active');
     }
 
     function openExportSheet() {
       setUIState('active');
-      document.getElementById('btnStateActive').setAttribute('aria-pressed', 'false');
       document.getElementById('btnStateExport').setAttribute('aria-pressed', 'true');
-      const layer = document.getElementById('exportSheetLayer');
-      layer.style.display = 'block';
-      let pct = 12;
+      document.getElementById('exportSheetLayer').style.display = 'block';
+      let pct = 14;
       clearInterval(exportTimer);
       exportTimer = setInterval(() => {
         pct = Math.min(100, pct + 4);
         document.getElementById('exportProgressBar').style.setProperty('--value', pct);
         document.getElementById('exportPercentText').textContent = pct + '%';
         if (pct >= 100) {
-          document.getElementById('exportStatusLabel').textContent = 'Export Ready : Rec.709 H.264 CFR Master';
+          document.getElementById('exportStatusLabel').textContent = 'Batch Complete : H.264 Rec.709 & ProRAW JPEG';
           clearInterval(exportTimer);
         }
-      }, 120);
+      }, 110);
     }
 
     function openErrorAlert(customMsg) {
       setUIState('active');
-      document.getElementById('btnStateActive').setAttribute('aria-pressed', 'false');
       document.getElementById('btnStateError').setAttribute('aria-pressed', 'true');
-      if (customMsg) {
-        document.getElementById('alertMessage').textContent = customMsg;
-      }
+      if (customMsg) document.getElementById('alertMessage').textContent = customMsg;
       document.getElementById('errorAlertLayer').style.display = 'block';
     }
 
@@ -1192,7 +1407,7 @@
       document.getElementById('errorAlertLayer').style.display = 'none';
     }
 
-    // Interactive Dragging for Split Wipe Bar & 3-Way Color Wheels
+    // Drag Interactions for Split Wipe & Color Wheels
     (function setupInteractions() {
       const stage = document.getElementById('canvasStage');
       const splitBar = document.getElementById('splitWipeBar');
@@ -1235,45 +1450,37 @@
           ring.setPointerCapture(e.pointerId);
           updateFromEvent(e);
         });
-        ring.addEventListener('pointermove', (e) => {
-          if (draggingWheel) updateFromEvent(e);
-        });
+        ring.addEventListener('pointermove', (e) => { if (draggingWheel) updateFromEvent(e); });
         ring.addEventListener('pointerup', () => { draggingWheel = false; });
       });
     })();
 
-    // Real .cube File Parser in Browser
+    // Real .cube File Parser (2^3 to 65^3)
     function handleCubeFile(event) {
       const file = event.target.files[0];
       if (!file) return;
       const reader = new FileReader();
       reader.onload = (e) => {
-        const text = e.target.result;
-        const lines = text.split(/\r?\n/);
-        let size = null;
-        let triplets = 0;
-        let rSum = 0, gSum = 0, bSum = 0;
+        const lines = e.target.result.split(/\r?\n/);
+        let size = null, triplets = 0, rSum = 0, gSum = 0, bSum = 0;
 
         for (let line of lines) {
           const clean = line.split('#')[0].trim();
           if (!clean) continue;
           if (clean.toUpperCase().startsWith('LUT_3D_SIZE')) {
-            const parts = clean.split(/\s+/);
-            size = parseInt(parts[1], 10);
+            size = parseInt(clean.split(/\s+/)[1], 10);
             continue;
           }
           if (/^[A-Za-z]/.test(clean)) continue;
           const nums = clean.split(/\s+/).map(Number);
           if (nums.length >= 3 && !nums.some(isNaN)) {
             triplets++;
-            rSum += nums[0];
-            gSum += nums[1];
-            bSum += nums[2];
+            rSum += nums[0]; gSum += nums[1]; bSum += nums[2];
           }
         }
 
-        if (!size || size < 2 || size > 64 || triplets !== size * size * size) {
-          openErrorAlert(`File '${file.name}' failed validation: Expected LUT_3D_SIZE N (2..64) with N^3 RGB triplets, found size=${size || 'none'} and ${triplets} triplets.`);
+        if (!size || size < 2 || size > 65 || triplets !== size * size * size) {
+          openErrorAlert(`File '${file.name}' failed validation: Expected LUT_3D_SIZE N (2..65) with N^3 RGB triplets, found size=${size || 'none'} and ${triplets} triplets.`);
           return;
         }
 
@@ -1290,11 +1497,13 @@
       reader.readAsText(file);
     }
 
-    function handleVideoFile(event) {
+    function handleMediaFile(event) {
       const file = event.target.files[0];
       if (!file) return;
+      const isPhoto = /\.(dng|raw|heic|jpg|jpeg|png|tiff)$/i.test(file.name);
+      setMediaKind(isPhoto ? 'photo' : 'video');
       setUIState('active');
-      showHUD('Loaded clip: ' + file.name);
+      showHUD('Loaded ' + (isPhoto ? 'Photo: ' : 'Video: ') + file.name);
     }
 
     function handleCanvasDrop(event) {
@@ -1305,57 +1514,38 @@
       if (f.name.toLowerCase().endsWith('.cube')) {
         handleCubeFile({ target: { files: [f] } });
       } else {
-        showHUD('Loaded dropped media: ' + f.name);
+        handleMediaFile({ target: { files: [f] } });
       }
     }
 
-    // Keyboard Shortcuts (Mac & iPad Pro NLE workflow + Escape modal close R-32)
     window.addEventListener('keydown', (e) => {
       if (e.target.tagName === 'INPUT') return;
-      if (e.code === 'Space') {
-        e.preventDefault();
-        togglePlayback();
-      } else if (e.key === '\\') {
-        e.preventDefault();
-        toggleSplitWipe();
-      } else if (e.key === 'e' || e.key === 'E') {
-        e.preventDefault();
-        openExportSheet();
-      } else if (e.key === 'r' || e.key === 'R') {
-        e.preventDefault();
-        resetAllGrading();
-      } else if (e.key === 'Escape') {
-        closeOverlays();
-      } else if (e.key === 'j' || e.key === 'J') {
-        stepFrame(-2);
-      } else if (e.key === 'k' || e.key === 'K') {
-        state.playing = false;
-      } else if (e.key === 'l' || e.key === 'L') {
-        stepFrame(2);
-      }
+      if (e.code === 'Space') { e.preventDefault(); togglePlayback(); }
+      else if (e.key === '\\') { e.preventDefault(); toggleSplitWipe(); }
+      else if (e.key === 'e' || e.key === 'E') { e.preventDefault(); openExportSheet(); }
+      else if (e.key === 'c' || e.key === 'C') { copyGrade(); }
+      else if (e.key === 'v' || e.key === 'V') { pasteGrade(); }
+      else if (e.key === 'r' || e.key === 'R') { e.preventDefault(); resetAllGrading(); }
+      else if (e.key === 'Escape') { closeOverlays(); }
     });
 
-    // Real-Time 60fps Procedural Reference Video + Color Grading Shader Simulation
+    // Real-Time 60fps Render & Scope Telemetry Loop
     function renderLoop() {
-      if (state.playing) {
+      if (state.playing && state.mediaKind === 'video') {
         state.frameTick += 1;
+        const ff = String(state.frameTick % 60).padStart(2, '0');
+        const ss = String(Math.floor(state.frameTick / 60) % 60).padStart(2, '0');
+        document.getElementById('timecodeReadout').textContent = `00:00:${ss}:${ff}`;
       }
-
-      const totalFrames = state.frameTick;
-      const ff = String(totalFrames % 60).padStart(2, '0');
-      const ss = String(Math.floor(totalFrames / 60) % 60).padStart(2, '0');
-      document.getElementById('timecodeReadout').textContent = `00:00:${ss}:${ff}`;
 
       const w = canvas.width;
       const h = canvas.height;
-      const t = state.frameTick * 0.018;
+      const t = (state.mediaKind === 'video') ? state.frameTick * 0.018 : 1.25;
 
-      // 1. Draw Un-graded Original Reference Scene on right side (or full canvas)
       ctx.save();
       drawScenePass(ctx, w, h, t, false);
       ctx.restore();
 
-      // 2. Draw Graded Pass clipped to Left of Split Wipe Bar (unless bypassed)
       if (!state.bypass) {
         const splitPixel = state.splitActive ? Math.floor(w * state.splitX) : w;
         ctx.save();
@@ -1366,87 +1556,85 @@
         ctx.restore();
       }
 
+      if (state.frameTick % 3 === 0 || state.mediaKind === 'photo') {
+        renderScopesFromCanvas();
+      }
+
       requestAnimationFrame(renderLoop);
     }
 
     function transformColor(r, g, b, graded) {
       if (!graded) {
-        // Simulate raw un-tonemapped Log/HDR source look
-        return `rgb(${Math.round(r * 0.88 + 22)}, ${Math.round(g * 0.86 + 24)}, ${Math.round(b * 0.85 + 26)})`;
+        return `rgb(${Math.round(r * 0.86 + 24)}, ${Math.round(g * 0.85 + 24)}, ${Math.round(b * 0.84 + 26)})`;
       }
 
-      let rf = r / 255;
-      let gf = g / 255;
-      let bf = b / 255;
+      let rf = r / 255, gf = g / 255, bf = b / 255;
 
-      // Stage 1: Exposure (EV) & Contrast
+      // 1. Exposure, Contrast, Highlights, Shadows, Whites
       const evMult = Math.pow(2, state.exposure * 0.65);
-      rf *= evMult;
-      gf *= evMult;
-      bf *= evMult;
+      rf *= evMult; gf *= evMult; bf *= evMult;
 
       rf = (rf - 0.5) * state.contrast + 0.5;
       gf = (gf - 0.5) * state.contrast + 0.5;
       bf = (bf - 0.5) * state.contrast + 0.5;
 
-      // Stage 2: White Balance Temperature & Tint
+      const luma0 = 0.2126 * rf + 0.7152 * gf + 0.0722 * bf;
+      const shW = Math.max(0, 1 - luma0 * 1.5);
+      const hiW = Math.max(0, (luma0 - 0.35) * 1.5);
+      rf += shW * state.shadows * 0.22 + hiW * (state.highlights + state.whites) * 0.20;
+      gf += shW * state.shadows * 0.22 + hiW * (state.highlights + state.whites) * 0.20;
+      bf += shW * state.shadows * 0.22 + hiW * (state.highlights + state.whites) * 0.20;
+
+      // 2. White Balance
       const tempShift = (state.temperature - 6500) / 10000;
       const tintShift = state.tint / 400;
       rf += tempShift * 0.22;
       bf -= tempShift * 0.22;
       gf += tintShift * 0.18;
 
-      // Stage 3: 3-Way Color Wheels (Lift / Gamma / Gain)
-      const luma = 0.2126 * rf + 0.7152 * gf + 0.0722 * bf;
-      const shadowW = Math.max(0, 1 - luma * 1.5);
-      const highW = Math.max(0, (luma - 0.35) * 1.5);
-      const midW = Math.max(0, 1 - Math.abs(luma - 0.5) * 2);
+      // 3. Tone Curves (Master + R/G/B)
+      const evalCurve = (arr, v) => {
+        const idx = Math.max(0, Math.min(3, Math.floor(v * 4)));
+        const frac = (v * 4) - idx;
+        return arr[idx] * (1 - frac) + arr[idx + 1] * frac;
+      };
+      rf = evalCurve(state.curves.master, evalCurve(state.curves.r, Math.max(0, Math.min(1, rf))));
+      gf = evalCurve(state.curves.master, evalCurve(state.curves.g, Math.max(0, Math.min(1, gf))));
+      bf = evalCurve(state.curves.master, evalCurve(state.curves.b, Math.max(0, Math.min(1, bf))));
 
-      rf += shadowW * (state.wheels.lift.r + state.wheels.lift.luma) + midW * (state.wheels.gamma.r + state.wheels.gamma.luma) + highW * (state.wheels.gain.r + state.wheels.gain.luma);
-      gf += shadowW * state.wheels.lift.luma + midW * state.wheels.gamma.luma + highW * state.wheels.gain.luma;
-      bf += shadowW * (state.wheels.lift.b + state.wheels.lift.luma) + midW * (state.wheels.gamma.b + state.wheels.gamma.luma) + highW * (state.wheels.gain.b + state.wheels.gain.luma);
+      // 4. HSL Orange/Blue secondary shift + 3-Way Wheels
+      const orangeSeg = state.hsl.orange;
+      const blueSeg = state.hsl.blue;
+      const skinAtten = state.skinLock ? 0.35 : 1.0;
+      rf += orangeSeg.lum * 0.15 * skinAtten + shW * (state.wheels.lift.r + state.wheels.lift.luma) + hiW * (state.wheels.gain.r + state.wheels.gain.luma);
+      gf += shW * state.wheels.lift.luma + hiW * state.wheels.gain.luma;
+      bf += blueSeg.sat * 0.18 + shW * (state.wheels.lift.b + state.wheels.lift.luma) + hiW * (state.wheels.gain.b + state.wheels.gain.luma);
 
-      // Stage 4: 3D LUT Preset Transform + Intensity Mix
+      // 5. 3D LUT + Halation
       let lr = rf, lg = gf, lb = bf;
       if (state.lutPreset === 'kodak2383') {
-        lr = rf * 1.08 + 0.02;
-        lg = gf * 0.99;
-        lb = bf * 0.90 + (1 - luma) * 0.06;
+        lr = rf * 1.08 + 0.02; lg = gf * 0.99; lb = bf * 0.90 + (1 - luma0) * 0.06;
       } else if (state.lutPreset === 'tungsten') {
-        lr = rf + highW * 0.10 - shadowW * 0.06;
-        lg = gf + 0.02;
-        lb = bf + shadowW * 0.11 - highW * 0.07;
+        lr = rf + hiW * 0.10 - shW * 0.06; lg = gf + 0.02; lb = bf + shW * 0.11 - hiW * 0.07;
       } else if (state.lutPreset === 'bleach') {
-        lr = rf * 0.45 + luma * 0.55;
-        lg = gf * 0.45 + luma * 0.55;
-        lb = bf * 0.45 + luma * 0.55;
+        lr = rf * 0.45 + luma0 * 0.55; lg = gf * 0.45 + luma0 * 0.55; lb = bf * 0.45 + luma0 * 0.55;
       } else if (state.lutPreset === 'applelog') {
-        lr = Math.pow(Math.max(0, rf), 0.85) * 1.12;
-        lg = Math.pow(Math.max(0, gf), 0.85) * 1.08;
-        lb = Math.pow(Math.max(0, bf), 0.85) * 1.05;
-      } else if (state.lutPreset === 'custom' && state.customCubeTable) {
-        lr = rf + state.customCubeTable.rBias * 0.3;
-        lg = gf + state.customCubeTable.gBias * 0.3;
-        lb = bf + state.customCubeTable.bBias * 0.3;
+        lr = Math.pow(Math.max(0, rf), 0.85) * 1.12; lg = Math.pow(Math.max(0, gf), 0.85) * 1.08; lb = Math.pow(Math.max(0, bf), 0.85) * 1.05;
       }
-
-      rf = rf * (1 - state.lutIntensity) + lr * state.lutIntensity;
-      gf = gf * (1 - state.lutIntensity) + lg * state.lutIntensity;
+      rf = rf * (1 - state.lutIntensity) + lr * state.lutIntensity + hiW * state.halation * 0.25;
+      gf = gf * (1 - state.lutIntensity) + lg * state.lutIntensity + hiW * state.halation * 0.06;
       bf = bf * (1 - state.lutIntensity) + lb * state.lutIntensity;
 
-      // Stage 5: Saturation & Skin Vibrance
       const postLuma = 0.2126 * rf + 0.7152 * gf + 0.0722 * bf;
-      const satTotal = Math.max(0, state.saturation + state.vibrance * 0.5);
-      rf = postLuma + (rf - postLuma) * satTotal;
-      gf = postLuma + (gf - postLuma) * satTotal;
-      bf = postLuma + (bf - postLuma) * satTotal;
+      rf = postLuma + (rf - postLuma) * state.saturation;
+      gf = postLuma + (gf - postLuma) * state.saturation;
+      bf = postLuma + (bf - postLuma) * state.saturation;
 
       const clamp = (v) => Math.max(0, Math.min(255, Math.round(v * 255)));
       return `rgb(${clamp(rf)}, ${clamp(gf)}, ${clamp(bf)})`;
     }
 
     function drawScenePass(c, w, h, t, graded) {
-      // Sky / Studio Backlight Gradient
       const skyGrad = c.createLinearGradient(0, 0, 0, h * 0.68);
       skyGrad.addColorStop(0, transformColor(24, 42, 74, graded));
       skyGrad.addColorStop(0.55, transformColor(72, 96, 128, graded));
@@ -1454,61 +1642,110 @@
       c.fillStyle = skyGrad;
       c.fillRect(0, 0, w, h);
 
-      // Sun / Practical Highlight Source (Tests HDR PQ to Rec.709 100-nit roll-off)
       const sunX = w * 0.32 + Math.sin(t * 0.7) * 28;
       const sunY = h * 0.32;
-      const sunGrad = c.createRadialGradient(sunX, sunY, 8, sunX, sunY, 110);
+      const sunGrad = c.createRadialGradient(sunX, sunY, 8, sunX, sunY, 110 + (graded ? state.halation * 45 : 0));
       sunGrad.addColorStop(0, transformColor(252, 236, 195, graded));
       sunGrad.addColorStop(0.5, transformColor(235, 162, 96, graded));
       sunGrad.addColorStop(1, 'rgba(0,0,0,0)');
       c.fillStyle = sunGrad;
       c.beginPath();
-      c.arc(sunX, sunY, 110, 0, Math.PI * 2);
+      c.arc(sunX, sunY, 130, 0, Math.PI * 2);
       c.fill();
 
-      // Foreground Silhouette & Architecture Geometry
       c.fillStyle = transformColor(18, 22, 30, graded);
       c.fillRect(0, h * 0.66, w, h * 0.34);
 
-      // Colorist Skin-Tone & Macbeth Reference Swatches on Right Side of Frame
       const swatchColors = [
-        [194, 150, 130], // Light Warm Skin Reference
-        [115, 82, 68],   // Deep Skin Reference
-        [98, 122, 157],  // Foliage / Sky Blue
-        [224, 163, 46],  // Warm Amber Reference
-        [87, 108, 67],   // Natural Olive
-        [175, 54, 60]    // Primary Crimson
+        [194, 150, 130], [115, 82, 68],
+        [98, 122, 157],  [224, 163, 46],
+        [87, 108, 67],   [175, 54, 60]
       ];
-
-      const startX = w * 0.62;
-      const startY = h * 0.16;
-      const cellW = 36;
-      const cellH = 26;
+      const startX = w * 0.62, startY = h * 0.16, cellW = 36, cellH = 26;
       swatchColors.forEach((rgb, idx) => {
-        const col = idx % 2;
-        const row = Math.floor(idx / 2);
-        const sx = startX + col * (cellW + 8);
-        const sy = startY + row * (cellH + 8);
+        const sx = startX + (idx % 2) * (cellW + 8);
+        const sy = startY + Math.floor(idx / 2) * (cellH + 8);
         c.fillStyle = transformColor(rgb[0], rgb[1], rgb[2], graded);
         c.fillRect(sx, sy, cellW, cellH);
         c.strokeStyle = 'rgba(255,255,255,0.22)';
         c.strokeRect(sx, sy, cellW, cellH);
       });
 
-      // Moving Anamorphic Subject / Horizon Wave
-      c.strokeStyle = transformColor(235, 190, 120, graded);
-      c.lineWidth = 2;
-      c.beginPath();
-      for (let x = 0; x <= w; x += 12) {
-        const y = h * 0.66 + Math.sin(x * 0.02 + t) * 8;
-        if (x === 0) c.moveTo(x, y);
-        else c.lineTo(x, y);
+      // Procedural Film Grain pass
+      if (graded && state.grain > 0.01) {
+        c.fillStyle = `rgba(255,255,255,${state.grain * 0.12})`;
+        for (let i = 0; i < 140; i++) {
+          const gx = (Math.sin(i * 78.233 + t * 43) * 0.5 + 0.5) * w;
+          const gy = (Math.cos(i * 19.131 + t * 29) * 0.5 + 0.5) * h;
+          c.fillRect(gx, gy, state.grainSize * 1.8, state.grainSize * 1.8);
+        }
       }
-      c.stroke();
     }
 
+    function renderScopesFromCanvas() {
+      const sw = scopeCanvas.width;
+      const sh = scopeCanvas.height;
+      scopeCtx.clearRect(0, 0, sw, sh);
+
+      if (state.scopeMode === 'waveform') {
+        scopeCtx.strokeStyle = 'rgba(255,255,255,0.12)';
+        [0.25, 0.5, 0.75].forEach(f => {
+          scopeCtx.beginPath();
+          scopeCtx.moveTo(0, sh * f); scopeCtx.lineTo(sw, sh * f);
+          scopeCtx.stroke();
+        });
+        scopeCtx.strokeStyle = 'rgba(245, 158, 11, 0.78)';
+        scopeCtx.lineWidth = 2;
+        for (let x = 0; x < sw; x += 4) {
+          const normX = x / sw;
+          const baseIre = 0.25 + Math.sin(normX * 5 + state.exposure) * 0.22 + state.exposure * 0.12;
+          const yTop = sh * (1 - Math.min(0.96, Math.max(0.05, baseIre + 0.22 * state.contrast)));
+          const yBot = sh * (1 - Math.min(0.92, Math.max(0.02, baseIre - 0.16 * state.contrast)));
+          scopeCtx.beginPath();
+          scopeCtx.moveTo(x, yTop);
+          scopeCtx.lineTo(x, yBot);
+          scopeCtx.stroke();
+        }
+      } else if (state.scopeMode === 'vectorscope') {
+        const cx = sw * 0.5, cy = sh * 0.5, rad = Math.min(sw, sh) * 0.42;
+        scopeCtx.strokeStyle = 'rgba(255,255,255,0.22)';
+        scopeCtx.beginPath(); scopeCtx.arc(cx, cy, rad, 0, Math.PI * 2); scopeCtx.stroke();
+        // Skin tone I-line
+        scopeCtx.strokeStyle = '#f59e0b';
+        scopeCtx.beginPath();
+        scopeCtx.moveTo(cx, cy);
+        scopeCtx.lineTo(cx - rad * 0.55, cy - rad * 0.82);
+        scopeCtx.stroke();
+        scopeCtx.fillStyle = 'rgba(34, 197, 94, 0.85)';
+        for (let i = 0; i < 24; i++) {
+          const ang = i * 0.45 + (state.temperature - 6500) * 0.0002;
+          const dist = (0.2 + (i % 5) * 0.12) * rad * state.saturation;
+          scopeCtx.fillRect(cx + Math.cos(ang) * dist, cy + Math.sin(ang) * dist, 2.5, 2.5);
+        }
+      } else {
+        const channels = [
+          { color: 'rgba(239,68,68,0.8)', shift: 0.4 + state.exposure * 0.1 },
+          { color: 'rgba(34,197,94,0.8)', shift: 0.5 },
+          { color: 'rgba(59,130,246,0.8)', shift: 0.6 - (state.temperature - 6500) * 0.00005 }
+        ];
+        channels.forEach(ch => {
+          scopeCtx.strokeStyle = ch.color;
+          scopeCtx.lineWidth = 1.5;
+          scopeCtx.beginPath();
+          for (let x = 0; x < sw; x += 4) {
+            const nx = x / sw;
+            const bell = Math.exp(-Math.pow(nx - ch.shift, 2) / 0.045);
+            const y = sh - bell * (sh * 0.82);
+            if (x === 0) scopeCtx.moveTo(x, y);
+            else scopeCtx.lineTo(x, y);
+          }
+          scopeCtx.stroke();
+        });
+      }
+    }
+
+    drawCurveEditor();
     requestAnimationFrame(renderLoop);
   </script>
 </body>
 </html>
-

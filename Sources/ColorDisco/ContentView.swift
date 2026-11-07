@@ -3,10 +3,12 @@ import AVFoundation
 import UniformTypeIdentifiers
 
 public enum InspectorDeckTab: String, CaseIterable, Identifiable {
-    case luts = "LUTs"
+    case basics = "Basics"
+    case curves = "Curves"
+    case hsl = "HSL"
     case wheels = "Wheels"
-    case sliders = "Sliders"
-    case export = "Export"
+    case film = "Film"
+    case luts = "LUTs"
 
     public var id: String { rawValue }
 }
@@ -14,20 +16,28 @@ public enum InspectorDeckTab: String, CaseIterable, Identifiable {
 public struct ContentView: View {
     @State private var engine = ColorGradingEngine()
     @State private var player = AVPlayer()
-    @State private var selectedTab: InspectorDeckTab = .luts
+    @State private var selectedTab: InspectorDeckTab = .basics
+    @State private var selectedCurveChannel: CurveChannel = .masterLuma
+    @State private var selectedHSLChannel: HSLChannel = .orange
     @State private var selectedLUTCategory: String = "All"
     @State private var lutSearchQuery: String = ""
     @State private var isPlaying: Bool = false
+    @State private var isShowingScopesOverlay: Bool = true
 
     @State private var isImportingVideo: Bool = false
+    @State private var isImportingPhoto: Bool = false
     @State private var isImportingLUT: Bool = false
+    @State private var isImportingBatch: Bool = false
     @State private var isShowingExportSheet: Bool = false
     @State private var isDarkAppearance: Bool = true
 
     @State private var selectedAspectRatio: SocialAspectRatioPreset = .portrait9x16
     @State private var selectedFrameRate: ExportFrameRatePreset = .fps60
+    @State private var selectedPhotoFormat: PhotoExportFormat = .jpegRec709
+    @State private var batchQueue: [BatchExportItem] = []
     @State private var isExporting: Bool = false
     @State private var exportProgress: Float = 0.0
+    @State private var exportStatusText: String = ""
     @State private var exportedFileURL: URL?
     @State private var activeErrorMessage: String?
 
@@ -35,7 +45,8 @@ public struct ContentView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     #endif
 
-    private let exporter = VideoExporter()
+    private let videoExporter = VideoExporter()
+    private let batchExporter = BatchExporter()
 
     public init() {}
 
@@ -60,11 +71,25 @@ public struct ContentView: View {
             handleVideoImport(result)
         }
         .fileImporter(
+            isPresented: $isImportingPhoto,
+            allowedContentTypes: [.image, .rawImage, .heic, .jpeg, .png, .tiff],
+            allowsMultipleSelection: false
+        ) { result in
+            handlePhotoImport(result)
+        }
+        .fileImporter(
             isPresented: $isImportingLUT,
             allowedContentTypes: [UTType(filenameExtension: "cube") ?? .data, .png],
             allowsMultipleSelection: false
         ) { result in
             handleLUTImport(result)
+        }
+        .fileImporter(
+            isPresented: $isImportingBatch,
+            allowedContentTypes: [.movie, .mpeg4Movie, .quickTimeMovie, .image, .rawImage, .heic, .jpeg, .png],
+            allowsMultipleSelection: true
+        ) { result in
+            handleBatchQueueImport(result)
         }
         .sheet(isPresented: $isShowingExportSheet) {
             exportMasterSheet
@@ -84,33 +109,39 @@ public struct ContentView: View {
         }
     }
 
-    // MARK: - 1. iPhone Compact Layout (Bottom Deck + Full Viewport)
+    // MARK: - 1. iPhone Compact Layout (Top Metal Canvas + Overlay Scopes + Bottom Thumb Deck)
 
     private var iPhoneCompactWorkspace: some View {
         VStack(spacing: 0) {
             topNavigationBar
-            ZStack {
+            ZStack(alignment: .bottomTrailing) {
                 VideoPlayerView(engine: engine, player: player)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 hudConfirmationBanner
+
+                if isShowingScopesOverlay {
+                    ScopesView(telemetry: engine.scopeTelemetry)
+                        .frame(width: 240)
+                        .padding(10)
+                }
             }
             transportToolbar
-            VStack(spacing: 12) {
+            VStack(spacing: 10) {
                 Picker("Inspector Mode", selection: $selectedTab) {
                     ForEach(InspectorDeckTab.allCases) { tab in
                         Text(tab.rawValue).tag(tab)
                     }
                 }
                 .pickerStyle(.segmented)
-                .padding(.horizontal, 16)
-                .padding(.top, 12)
+                .padding(.horizontal, 12)
+                .padding(.top, 10)
 
                 ScrollView {
                     activeDeckContent
-                        .padding(.horizontal, 16)
+                        .padding(.horizontal, 14)
                         .padding(.bottom, 16)
                 }
-                .frame(height: 290)
+                .frame(height: 310)
             }
             .background(isDarkAppearance ? Color(red: 0.07, green: 0.07, blue: 0.085) : Color(white: 0.96))
             .overlay(
@@ -122,14 +153,19 @@ public struct ContentView: View {
         }
     }
 
-    // MARK: - 2. iPadOS Adaptive Three-Column Split View
+    // MARK: - 2. iPadOS Adaptive Multi-Column Split View
 
     private var iPadOSSplitWorkspace: some View {
         NavigationSplitView {
-            VStack(spacing: 0) {
-                lutBrowserPanel
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    ScopesView(telemetry: engine.scopeTelemetry)
+                    lutBrowserPanel
+                    gradeClipboardAndPresetsPanel
+                }
+                .padding(12)
             }
-            .navigationTitle("LUTs & Clips")
+            .navigationTitle("Scopes & LUTs")
         } detail: {
             HStack(spacing: 0) {
                 VStack(spacing: 0) {
@@ -142,17 +178,25 @@ public struct ContentView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
-                        threeWayWheelsPanel
-                        Divider()
-                        primarySlidersPanel
-                        Divider()
-                        inlineExportConfigurationPanel
+                VStack(spacing: 0) {
+                    Picker("Inspector", selection: $selectedTab) {
+                        ForEach(InspectorDeckTab.allCases) { tab in
+                            Text(tab.rawValue).tag(tab)
+                        }
                     }
-                    .padding(16)
+                    .pickerStyle(.segmented)
+                    .padding(12)
+
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 20) {
+                            activeDeckContent
+                            Divider()
+                            inlineExportConfigurationPanel
+                        }
+                        .padding(16)
+                    }
                 }
-                .frame(width: 340)
+                .frame(width: 370)
                 .background(isDarkAppearance ? Color(red: 0.07, green: 0.07, blue: 0.085) : Color(white: 0.96))
                 .overlay(
                     Rectangle()
@@ -164,12 +208,19 @@ public struct ContentView: View {
         }
     }
 
-    // MARK: - 3. macOS Desktop Pro Workspace (Keyboard Shortcuts + Drag & Drop)
+    // MARK: - 3. macOS Desktop Studio Workspace (Drag-and-Drop + Keyboard Shortcuts)
 
     private var macOSProWorkspace: some View {
         NavigationSplitView {
-            lutBrowserPanel
-                .frame(minWidth: 250)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    ScopesView(telemetry: engine.scopeTelemetry)
+                    lutBrowserPanel
+                    gradeClipboardAndPresetsPanel
+                }
+                .padding(12)
+            }
+            .frame(minWidth: 280)
         } detail: {
             HStack(spacing: 0) {
                 VStack(spacing: 0) {
@@ -185,17 +236,25 @@ public struct ContentView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
-                        threeWayWheelsPanel
-                        Divider()
-                        primarySlidersPanel
-                        Divider()
-                        inlineExportConfigurationPanel
+                VStack(spacing: 0) {
+                    Picker("Deck", selection: $selectedTab) {
+                        ForEach(InspectorDeckTab.allCases) { tab in
+                            Text(tab.rawValue).tag(tab)
+                        }
                     }
-                    .padding(18)
+                    .pickerStyle(.segmented)
+                    .padding(12)
+
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 20) {
+                            activeDeckContent
+                            Divider()
+                            inlineExportConfigurationPanel
+                        }
+                        .padding(18)
+                    }
                 }
-                .frame(width: 360)
+                .frame(width: 390)
                 .background(isDarkAppearance ? Color(red: 0.07, green: 0.07, blue: 0.085) : Color(white: 0.96))
                 .overlay(
                     Rectangle()
@@ -207,13 +266,16 @@ public struct ContentView: View {
         }
         .background(
             Group {
-                // macOS NLE Keyboard Shortcuts: Space (Play/Pause), \ (Split Wipe), Cmd+E (Export), J/K/L (Scrub)
                 Button("") { togglePlayPause() }
                     .keyboardShortcut(.space, modifiers: [])
                 Button("") { toggleSplitWipe() }
                     .keyboardShortcut("\\", modifiers: [])
                 Button("") { isShowingExportSheet = true }
                     .keyboardShortcut("e", modifiers: [.command])
+                Button("") { engine.copyGradeToClipboard() }
+                    .keyboardShortcut("c", modifiers: [.command, .shift])
+                Button("") { engine.pasteGradeFromClipboard() }
+                    .keyboardShortcut("v", modifiers: [.command, .shift])
                 Button("") { scrubBy(seconds: -1.0) }
                     .keyboardShortcut("j", modifiers: [])
                 Button("") { pausePlayback() }
@@ -225,32 +287,56 @@ public struct ContentView: View {
         )
     }
 
-    // MARK: - Shared Navigation & Transport Bars (@samios 90% Primary)
+    // MARK: - Top Navigation & Bottom Transport Bars (@samios 90% Primary)
 
     private var topNavigationBar: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
             Button {
                 isImportingVideo = true
             } label: {
-                Label("Open Clip", systemImage: "film")
-                    .font(.system(size: 13, weight: .medium))
+                Label("Video", systemImage: "film")
+                    .font(.system(size: 12, weight: .medium))
+            }
+            .buttonStyle(.bordered)
+
+            Button {
+                isImportingPhoto = true
+            } label: {
+                Label("Photo / ProRAW", systemImage: "camera.aperture")
+                    .font(.system(size: 12, weight: .medium))
             }
             .buttonStyle(.bordered)
 
             Button {
                 isImportingLUT = true
             } label: {
-                Label("Import .cube / HALD", systemImage: "cube")
-                    .font(.system(size: 13, weight: .medium))
+                Label(".cube / HALD", systemImage: "cube")
+                    .font(.system(size: 12, weight: .medium))
             }
             .buttonStyle(.bordered)
 
             Spacer()
 
-            Text("ColorDisco Studio")
+            Text("Pro Grade Studio")
                 .font(.system(size: 14, weight: .semibold))
 
             Spacer()
+
+            Button {
+                engine.copyGradeToClipboard()
+            } label: {
+                Image(systemName: "doc.on.doc")
+            }
+            .buttonStyle(.bordered)
+            .help("Copy Grade Recipe")
+
+            Button {
+                engine.pasteGradeFromClipboard()
+            } label: {
+                Image(systemName: "doc.on.clipboard")
+            }
+            .buttonStyle(.bordered)
+            .help("Paste Grade Recipe")
 
             Button {
                 isDarkAppearance.toggle()
@@ -263,57 +349,59 @@ public struct ContentView: View {
             Button {
                 engine.resetAllParameters()
             } label: {
-                Label("Reset", systemImage: "arrow.counterclockwise")
-                    .font(.system(size: 13, weight: .medium))
+                Image(systemName: "arrow.counterclockwise")
             }
             .buttonStyle(.bordered)
+            .accessibilityLabel("Reset All Parameters")
 
             Button {
                 isShowingExportSheet = true
             } label: {
-                Label("Export Rec.709", systemImage: "square.and.arrow.up")
-                    .font(.system(size: 13, weight: .semibold))
+                Label("Export", systemImage: "square.and.arrow.up")
+                    .font(.system(size: 12, weight: .semibold))
             }
             .buttonStyle(.borderedProminent)
             .tint(Color(red: 0.96, green: 0.62, blue: 0.04))
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
         .background(.ultraThinMaterial)
     }
 
     private var transportToolbar: some View {
-        HStack(spacing: 14) {
-            Button {
-                scrubBy(seconds: -1.0)
-            } label: {
-                Image(systemName: "backward.frame.fill")
-            }
-            .accessibilityLabel("Step Back 1 Second")
+        HStack(spacing: 12) {
+            if engine.activeMediaKind == .video {
+                Button {
+                    scrubBy(seconds: -1.0)
+                } label: {
+                    Image(systemName: "backward.frame.fill")
+                }
+                .accessibilityLabel("Step Back 1 Second")
 
-            Button {
-                togglePlayPause()
-            } label: {
-                Image(systemName: isPlaying ? "pause.fill" : "play.fill")
-                    .frame(width: 28, height: 28)
-            }
-            .accessibilityLabel(isPlaying ? "Pause Video" : "Play Video")
+                Button {
+                    togglePlayPause()
+                } label: {
+                    Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+                        .frame(width: 26, height: 26)
+                }
+                .accessibilityLabel(isPlaying ? "Pause Video" : "Play Video")
 
-            Button {
-                scrubBy(seconds: 1.0)
-            } label: {
-                Image(systemName: "forward.frame.fill")
-            }
-            .accessibilityLabel("Step Forward 1 Second")
+                Button {
+                    scrubBy(seconds: 1.0)
+                } label: {
+                    Image(systemName: "forward.frame.fill")
+                }
+                .accessibilityLabel("Step Forward 1 Second")
 
-            Divider()
-                .frame(height: 18)
+                Divider()
+                    .frame(height: 16)
+            }
 
             Button {
                 toggleSplitWipe()
             } label: {
                 Label(
-                    engine.parameters.splitComparisonNormalizedX < 0.999 ? "Split: On" : "Split Wipe",
+                    engine.parameters.splitComparisonNormalizedX < 0.999 ? "A/B Split: On" : "A/B Split",
                     systemImage: "rectangle.split.2x1"
                 )
                 .font(.system(size: 12, weight: .medium))
@@ -324,10 +412,18 @@ public struct ContentView: View {
                 engine.parameters.isBypassed.toggle()
             } label: {
                 Label(
-                    engine.parameters.isBypassed ? "Bypassed" : "Compare Original",
+                    engine.parameters.isBypassed ? "Bypassed" : "Hold Original",
                     systemImage: "eye"
                 )
                 .font(.system(size: 12, weight: .medium))
+            }
+            .buttonStyle(.bordered)
+
+            Button {
+                isShowingScopesOverlay.toggle()
+            } label: {
+                Label("Scopes", systemImage: "waveform.path.ecg")
+                    .font(.system(size: 12, weight: .medium))
             }
             .buttonStyle(.bordered)
 
@@ -337,7 +433,7 @@ public struct ContentView: View {
                 .font(.system(size: 11, weight: .medium, design: .monospaced))
                 .foregroundStyle(.secondary)
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 14)
         .padding(.vertical, 8)
         .background(.ultraThinMaterial)
     }
@@ -362,28 +458,306 @@ public struct ContentView: View {
         }
     }
 
-    // MARK: - Inspector Deck Views
+    // MARK: - Inspector Deck Switcher
 
     @ViewBuilder
     private var activeDeckContent: some View {
         switch selectedTab {
-        case .luts:
-            lutBrowserPanel
+        case .basics:
+            primarySlidersPanel
+        case .curves:
+            parametricToneCurvesPanel
+        case .hsl:
+            eightChannelHSLPanel
         case .wheels:
             threeWayWheelsPanel
-        case .sliders:
-            primarySlidersPanel
-        case .export:
-            inlineExportConfigurationPanel
+        case .film:
+            filmEmulationPanel
+        case .luts:
+            VStack(alignment: .leading, spacing: 16) {
+                lutBrowserPanel
+                Divider()
+                gradeClipboardAndPresetsPanel
+            }
         }
     }
+
+    // MARK: - Tab 1: Basics (Apple Log, HDR Tonemap, Exposure, WB, Highlights/Shadows/Whites/Blacks)
+
+    private var primarySlidersPanel: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("INPUT NORMALIZATION & PRIMARY GRADE")
+                .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                .foregroundStyle(.secondary)
+
+            Toggle(isOn: $engine.parameters.basics.appleLogToRec709Enabled) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Apple Log to Rec.709 Transform")
+                        .font(.system(size: 13, weight: .medium))
+                    Text("One-click iPhone 15/16 Pro Log normalization")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            Toggle(isOn: $engine.parameters.basics.hdrToSdrTonemapEnabled) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("HDR10 / Dolby Vision to Rec.709 Tonemap")
+                        .font(.system(size: 13, weight: .medium))
+                    Text("Compresses PQ/HLG highlights into 100-nit SDR ceiling")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            ParameterSliderRow(label: "Exposure (EV)", value: $engine.parameters.basics.exposure, range: -3.0...3.0, unitFormat: "%+.2f EV")
+            ParameterSliderRow(label: "Contrast", value: $engine.parameters.basics.contrast, range: 0.5...1.5, unitFormat: "%.2fx")
+            ParameterSliderRow(label: "S-Curve Contrast", value: $engine.parameters.basics.sCurveContrast, range: 0.0...1.0, unitFormat: "%.0f%%", displayMultiplier: 100)
+            ParameterSliderRow(label: "Temperature (K)", value: $engine.parameters.basics.temperature, range: 3000.0...10000.0, unitFormat: "%.0fK")
+            ParameterSliderRow(label: "Tint (G/M)", value: $engine.parameters.basics.tint, range: -100.0...100.0, unitFormat: "%+.0f")
+            ParameterSliderRow(label: "Highlights", value: $engine.parameters.basics.highlights, range: -1.0...1.0, unitFormat: "%+.2f")
+            ParameterSliderRow(label: "Shadows", value: $engine.parameters.basics.shadows, range: -1.0...1.0, unitFormat: "%+.2f")
+            ParameterSliderRow(label: "Whites", value: $engine.parameters.basics.whites, range: -1.0...1.0, unitFormat: "%+.2f")
+            ParameterSliderRow(label: "Blacks", value: $engine.parameters.basics.blacks, range: -1.0...1.0, unitFormat: "%+.2f")
+            ParameterSliderRow(label: "Skin Vibrance", value: $engine.parameters.basics.vibrance, range: -1.0...1.0, unitFormat: "%+.2f")
+            ParameterSliderRow(label: "Saturation", value: $engine.parameters.basics.saturation, range: 0.0...2.0, unitFormat: "%.2fx")
+        }
+    }
+
+    // MARK: - Tab 2: 4-Channel RGB & Luma Parametric Bezier Tone Curves
+
+    private var parametricToneCurvesPanel: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("4-CHANNEL PARAMETRIC TONE CURVES")
+                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button("Reset Curve") {
+                    engine.parameters.curves[selectedCurveChannel] = CurvePoints()
+                }
+                .font(.system(size: 11, weight: .medium))
+                .buttonStyle(.plain)
+                .foregroundStyle(Color(red: 0.96, green: 0.62, blue: 0.04))
+            }
+
+            Picker("Channel", selection: $selectedCurveChannel) {
+                ForEach(CurveChannel.allCases) { ch in
+                    Text(ch.rawValue).tag(ch)
+                }
+            }
+            .pickerStyle(.segmented)
+
+            ToneCurveInteractiveView(
+                points: Binding(
+                    get: { engine.parameters.curves[selectedCurveChannel] },
+                    set: { engine.parameters.curves[selectedCurveChannel] = $0 }
+                ),
+                channel: selectedCurveChannel
+            )
+            .frame(height: 180)
+
+            HStack(spacing: 8) {
+                Button("Matte / Faded Blacks") {
+                    var pts = engine.parameters.curves[selectedCurveChannel]
+                    pts.p0 = CurveControlPoint(x: 0.00, y: 0.08)
+                    pts.p1 = CurveControlPoint(x: 0.25, y: 0.27)
+                    engine.parameters.curves[selectedCurveChannel] = pts
+                }
+                .buttonStyle(.bordered)
+                .font(.system(size: 11))
+
+                Button("Film S-Curve") {
+                    var pts = engine.parameters.curves[selectedCurveChannel]
+                    pts.p0 = CurveControlPoint(x: 0.00, y: 0.00)
+                    pts.p1 = CurveControlPoint(x: 0.25, y: 0.19)
+                    pts.p2 = CurveControlPoint(x: 0.50, y: 0.50)
+                    pts.p3 = CurveControlPoint(x: 0.75, y: 0.81)
+                    pts.p4 = CurveControlPoint(x: 1.00, y: 1.00)
+                    engine.parameters.curves[selectedCurveChannel] = pts
+                }
+                .buttonStyle(.bordered)
+                .font(.system(size: 11))
+            }
+        }
+    }
+
+    // MARK: - Tab 3: Secondary 8-Channel HSL Warper + Skin Tone Protection Lock
+
+    private var eightChannelHSLPanel: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("8-CHANNEL HSL WARPER")
+                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button("Zero HSL") {
+                    for ch in HSLChannel.allCases {
+                        engine.parameters.hslSegments[ch] = HSLSegment()
+                    }
+                }
+                .font(.system(size: 11, weight: .medium))
+                .buttonStyle(.plain)
+                .foregroundStyle(Color(red: 0.96, green: 0.62, blue: 0.04))
+            }
+
+            Toggle(isOn: $engine.parameters.skinToneProtectionLock) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Skin Tone Protection Lock")
+                        .font(.system(size: 13, weight: .medium))
+                    Text("Protects Orange/Red human skin locus during intense Teal & Orange shifts")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    ForEach(HSLChannel.allCases) { ch in
+                        Button {
+                            selectedHSLChannel = ch
+                        } label: {
+                            Text(ch.rawValue)
+                                .font(.system(size: 12, weight: .medium))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(
+                                    selectedHSLChannel == ch
+                                        ? Color(red: 0.96, green: 0.62, blue: 0.04)
+                                        : Color.primary.opacity(0.08)
+                                )
+                                .foregroundStyle(selectedHSLChannel == ch ? .black : .primary)
+                                .clipShape(RoundedRectangle(cornerRadius: 5))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+
+            let segmentBinding = Binding<HSLSegment>(
+                get: { engine.parameters.hslSegments[selectedHSLChannel] ?? HSLSegment() },
+                set: { engine.parameters.hslSegments[selectedHSLChannel] = $0 }
+            )
+
+            ParameterSliderRow(
+                label: "\(selectedHSLChannel.rawValue) Hue Shift",
+                value: segmentBinding.hueShift,
+                range: -1.0...1.0,
+                unitFormat: "%+.2f"
+            )
+            ParameterSliderRow(
+                label: "\(selectedHSLChannel.rawValue) Saturation",
+                value: segmentBinding.saturation,
+                range: -1.0...1.0,
+                unitFormat: "%+.2f"
+            )
+            ParameterSliderRow(
+                label: "\(selectedHSLChannel.rawValue) Luminance",
+                value: segmentBinding.luminance,
+                range: -1.0...1.0,
+                unitFormat: "%+.2f"
+            )
+        }
+    }
+
+    // MARK: - Tab 4: 3-Way Color Wheels (Lift / Gamma / Gain)
+
+    private var threeWayWheelsPanel: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("3-WAY COLOR WHEELS (LIFT / GAMMA / GAIN)")
+                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button("Zero Wheels") {
+                    engine.parameters.wheels = ColorWheelOffsets()
+                }
+                .font(.system(size: 11, weight: .medium))
+                .buttonStyle(.plain)
+                .foregroundStyle(Color(red: 0.96, green: 0.62, blue: 0.04))
+            }
+
+            HStack(spacing: 10) {
+                ColorWheelControl(title: "LIFT (SHADOWS)", vector: $engine.parameters.wheels.lift)
+                ColorWheelControl(title: "GAMMA (MIDS)", vector: $engine.parameters.wheels.gamma)
+                ColorWheelControl(title: "GAIN (HIGHLIGHTS)", vector: $engine.parameters.wheels.gain)
+            }
+        }
+    }
+
+    // MARK: - Tab 5: Film Emulation Engine (Halation, Procedural Grain, Anti-Banding Dither)
+
+    private var filmEmulationPanel: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("FILM EMULATION ENGINE (HALATION & ORGANIC GRAIN)")
+                .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                .foregroundStyle(.secondary)
+
+            ParameterSliderRow(
+                label: "Halation Intensity",
+                value: $engine.parameters.film.halationIntensity,
+                range: 0.0...1.0,
+                unitFormat: "%.0f%%",
+                displayMultiplier: 100
+            )
+            ParameterSliderRow(
+                label: "Halation Edge Threshold",
+                value: $engine.parameters.film.halationThreshold,
+                range: 0.40...0.95,
+                unitFormat: "%.2f IRE"
+            )
+            ParameterSliderRow(
+                label: "Halation Scatter Radius",
+                value: $engine.parameters.film.halationRadius,
+                range: 4.0...28.0,
+                unitFormat: "%.1f px"
+            )
+
+            Divider()
+
+            ParameterSliderRow(
+                label: "Dynamic Film Grain Amount",
+                value: $engine.parameters.film.grainIntensity,
+                range: 0.0...1.0,
+                unitFormat: "%.0f%%",
+                displayMultiplier: 100
+            )
+            ParameterSliderRow(
+                label: "Film Grain Size (16mm / 35mm)",
+                value: $engine.parameters.film.grainSize,
+                range: 0.5...3.0,
+                unitFormat: "%.2fx"
+            )
+            ParameterSliderRow(
+                label: "Emulsion Roughness",
+                value: $engine.parameters.film.grainRoughness,
+                range: 0.0...1.0,
+                unitFormat: "%.0f%%",
+                displayMultiplier: 100
+            )
+
+            Divider()
+
+            Toggle(isOn: $engine.parameters.antiBandingDitherEnabled) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Anti-Banding Triangular Micro-Dither (0.5 LSB)")
+                        .font(.system(size: 13, weight: .medium))
+                    Text("Prevents 8-bit quantization banding on flat skies when compressed")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    // MARK: - Tab 6: 3D LUT Browser + Copy/Paste Grade & JSON Presets
 
     private var lutBrowserPanel: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(.secondary)
-                TextField("Filter 3D LUTs (.cube / HALD)", text: $lutSearchQuery)
+                TextField("Filter 3D LUTs (.cube 17^3-65^3 / HALD)", text: $lutSearchQuery)
                     .textFieldStyle(.plain)
             }
             .padding(8)
@@ -414,7 +788,7 @@ public struct ContentView: View {
             }
 
             ParameterSliderRow(
-                label: "LUT Intensity",
+                label: "3D LUT Opacity / Intensity",
                 value: $engine.parameters.lutIntensity,
                 range: 0.0...1.0,
                 unitFormat: "%.0f%%",
@@ -472,6 +846,64 @@ public struct ContentView: View {
         }
     }
 
+    private var gradeClipboardAndPresetsPanel: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("GRADE MANAGEMENT & CLIPBOARD")
+                .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 8) {
+                Button {
+                    engine.copyGradeToClipboard()
+                } label: {
+                    Label("Copy Grade", systemImage: "doc.on.doc")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+
+                Button {
+                    engine.pasteGradeFromClipboard()
+                } label: {
+                    Label("Paste Grade", systemImage: "doc.on.clipboard")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .disabled(engine.copiedGradeClipboard == nil)
+            }
+
+            Button {
+                engine.saveCurrentPreset(named: "Recipe \(engine.savedPresets.count + 1)")
+            } label: {
+                Label("Save Current Recipe to Local Presets", systemImage: "bookmark.fill")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+
+            if !engine.savedPresets.isEmpty {
+                ForEach(Array(engine.savedPresets.enumerated()), id: \.offset) { _, saved in
+                    Button {
+                        engine.parameters = saved
+                        engine.statusBannerMessage = "Loaded Preset: \(saved.presetName)"
+                    } label: {
+                        HStack {
+                            Image(systemName: "slider.horizontal.3")
+                            Text(saved.presetName)
+                                .font(.system(size: 12, weight: .medium))
+                            Spacer()
+                            Text("Apply")
+                                .font(.system(size: 11, design: .monospaced))
+                                .foregroundStyle(Color(red: 0.96, green: 0.62, blue: 0.04))
+                        }
+                        .padding(8)
+                        .background(Color.primary.opacity(0.05))
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
     private var filteredStudioPresets: [StudioLUTPreset] {
         StudioLUTPreset.allCases.filter { preset in
             let matchesCategory = selectedLUTCategory == "All" || preset.category == selectedLUTCategory
@@ -480,101 +912,11 @@ public struct ContentView: View {
         }
     }
 
-    // MARK: - 3-Way Color Wheels (@samdesain 10% Fallback: Swiss Minimalist 1px Border)
-
-    private var threeWayWheelsPanel: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("3-WAY COLOR WHEELS (LIFT / GAMMA / GAIN)")
-                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(.secondary)
-                Spacer()
-                Button("Zero Wheels") {
-                    engine.parameters.lift = ColorWheelVector()
-                    engine.parameters.gamma = ColorWheelVector()
-                    engine.parameters.gain = ColorWheelVector()
-                }
-                .font(.system(size: 11, weight: .medium))
-                .buttonStyle(.plain)
-                .foregroundStyle(Color(red: 0.96, green: 0.62, blue: 0.04))
-            }
-
-            HStack(spacing: 10) {
-                ColorWheelControl(title: "LIFT (SHADOWS)", vector: $engine.parameters.lift)
-                ColorWheelControl(title: "GAMMA (MIDS)", vector: $engine.parameters.gamma)
-                ColorWheelControl(title: "GAIN (HIGHLIGHTS)", vector: $engine.parameters.gain)
-            }
-        }
-    }
-
-    private var primarySlidersPanel: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("PRIMARY COLOR & ANTI-BANDING CHAIN")
-                .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                .foregroundStyle(.secondary)
-
-            ParameterSliderRow(
-                label: "Exposure (EV)",
-                value: $engine.parameters.exposure,
-                range: -3.0...3.0,
-                unitFormat: "%+.2f EV"
-            )
-            ParameterSliderRow(
-                label: "S-Curve Contrast",
-                value: $engine.parameters.contrast,
-                range: 0.5...1.5,
-                unitFormat: "%.2fx"
-            )
-            ParameterSliderRow(
-                label: "Temperature",
-                value: $engine.parameters.temperature,
-                range: 3000.0...10000.0,
-                unitFormat: "%.0fK"
-            )
-            ParameterSliderRow(
-                label: "Tint (G/M)",
-                value: $engine.parameters.tint,
-                range: -100.0...100.0,
-                unitFormat: "%+.0f"
-            )
-            ParameterSliderRow(
-                label: "Skin Vibrance",
-                value: $engine.parameters.vibrance,
-                range: -1.0...1.0,
-                unitFormat: "%+.2f"
-            )
-            ParameterSliderRow(
-                label: "Saturation",
-                value: $engine.parameters.saturation,
-                range: 0.0...2.0,
-                unitFormat: "%.2fx"
-            )
-
-            Toggle(isOn: $engine.parameters.hdrToSdrTonemapEnabled) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("HDR PQ/HLG to Rec.709 Tonemap")
-                        .font(.system(size: 13, weight: .medium))
-                    Text("Maps Dolby Vision & HLG highlights into 100-nit SDR ceiling")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
-                }
-            }
-
-            Toggle(isOn: $engine.parameters.antiBandingDitherEnabled) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Triangular PDF Micro-Dither (0.5 LSB)")
-                        .font(.system(size: 13, weight: .medium))
-                    Text("Prevents 8-bit H.264 compression banding on Reels & TikTok")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
-                }
-            }
-        }
-    }
+    // MARK: - Social Media & Batch Export Configuration
 
     private var inlineExportConfigurationPanel: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("SOCIAL MEDIA MASTER EXPORT (REC. 709)")
+            Text("SOCIAL MEDIA & BATCH EXPORT (REC. 709)")
                 .font(.system(size: 11, weight: .semibold, design: .monospaced))
                 .foregroundStyle(.secondary)
 
@@ -591,24 +933,28 @@ public struct ContentView: View {
             }
             .pickerStyle(.segmented)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Codec: H.264 High Profile Level 4.2 (.mp4)")
-                Text("Color Tags: ITU-R BT.709-2 Primaries / Transfer / Matrix")
-                Text("Target Bitrate: \(selectedFrameRate.averageBitrateBps / 1_000_000) Mbps Avg / \(selectedFrameRate.maxBitrateBps / 1_000_000) Mbps Max CFR")
+            Picker("Still Photo Format", selection: $selectedPhotoFormat) {
+                ForEach(PhotoExportFormat.allCases) { fmt in
+                    Text(fmt.rawValue).tag(fmt)
+                }
             }
-            .font(.system(size: 11, design: .monospaced))
-            .foregroundStyle(.secondary)
-            .padding(10)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.primary.opacity(0.05))
-            .clipShape(RoundedRectangle(cornerRadius: 6))
+
+            HStack(spacing: 8) {
+                Button {
+                    isImportingBatch = true
+                } label: {
+                    Label("Add Batch Clips/Photos (\(batchQueue.count))", systemImage: "square.stack.3d.up")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+            }
 
             Button {
                 isShowingExportSheet = true
             } label: {
                 HStack {
                     Image(systemName: "bolt.horizontal.circle.fill")
-                    Text("Render Master Social Export")
+                    Text("Open Export & Batch Queue")
                         .fontWeight(.semibold)
                 }
                 .frame(maxWidth: .infinity)
@@ -622,7 +968,7 @@ public struct ContentView: View {
     private var exportMasterSheet: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("Master Social Export (Rec. 709 SDR)")
+                Text("Master Social & Batch Exporter (Rec. 709 SDR)")
                     .font(.headline)
                 Spacer()
                 Button("Close") {
@@ -635,7 +981,7 @@ public struct ContentView: View {
             if isExporting {
                 VStack(alignment: .leading, spacing: 8) {
                     ProgressView(value: exportProgress, total: 1.0)
-                    Text(String(format: "Encoding H.264 Rec.709 CFR... %.0f%%", exportProgress * 100))
+                    Text(exportStatusText.isEmpty ? String(format: "Encoding Rec.709... %.0f%%", exportProgress * 100) : exportStatusText)
                         .font(.system(size: 12, design: .monospaced))
                         .foregroundStyle(.secondary)
                 }
@@ -649,16 +995,23 @@ public struct ContentView: View {
             }
 
             HStack {
+                if !batchQueue.isEmpty {
+                    Button("Run Batch Export (\(batchQueue.count) Items)") {
+                        runBatchOfflineExport()
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(isExporting)
+                }
                 Spacer()
-                Button("Start Hardware Export") {
-                    runOfflineExport()
+                Button("Export Current Media") {
+                    runSingleOfflineExport()
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(isExporting || engine.currentAsset == nil)
+                .disabled(isExporting || (engine.currentAsset == nil && engine.currentPhotoImage == nil))
             }
         }
         .padding(24)
-        .frame(minWidth: 380)
+        .frame(minWidth: 420)
     }
 
     // MARK: - Actions & Handlers
@@ -708,6 +1061,20 @@ public struct ContentView: View {
         }
     }
 
+    private func handlePhotoImport(_ result: Result<[URL], Error>) {
+        switch result {
+        case .success(let urls):
+            guard let first = urls.first else { return }
+            do {
+                try engine.loadPhotoAsset(from: first)
+            } catch {
+                activeErrorMessage = error.localizedDescription
+            }
+        case .failure(let error):
+            activeErrorMessage = error.localizedDescription
+        }
+    }
+
     private func handleLUTImport(_ result: Result<[URL], Error>) {
         switch result {
         case .success(let urls):
@@ -722,6 +1089,20 @@ public struct ContentView: View {
         }
     }
 
+    private func handleBatchQueueImport(_ result: Result<[URL], Error>) {
+        switch result {
+        case .success(let urls):
+            let photoExts: Set<String> = ["dng", "raw", "heic", "jpg", "jpeg", "png", "tiff"]
+            for url in urls {
+                let kind: MediaItemKind = photoExts.contains(url.pathExtension.lowercased()) ? .photo : .video
+                batchQueue.append(BatchExportItem(sourceURL: url, kind: kind))
+            }
+            engine.statusBannerMessage = "Queued \(urls.count) items for Batch Export"
+        case .failure(let error):
+            activeErrorMessage = error.localizedDescription
+        }
+    }
+
     private func handleDroppedFiles(providers: [NSItemProvider]) -> Bool {
         guard let provider = providers.first else { return false }
         provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in
@@ -730,11 +1111,9 @@ public struct ContentView: View {
             Task { @MainActor in
                 let ext = url.pathExtension.lowercased()
                 if ext == "cube" || ext == "png" {
-                    do {
-                        try engine.importLUTFile(from: url)
-                    } catch {
-                        activeErrorMessage = error.localizedDescription
-                    }
+                    try? engine.importLUTFile(from: url)
+                } else if ["dng", "raw", "heic", "jpg", "jpeg", "tiff"].contains(ext) {
+                    try? engine.loadPhotoAsset(from: url)
                 } else {
                     try? await engine.loadVideoAsset(from: url)
                 }
@@ -743,20 +1122,50 @@ public struct ContentView: View {
         return true
     }
 
-    private func runOfflineExport() {
-        guard let asset = engine.currentAsset else {
-            activeErrorMessage = "Load a video clip before starting the hardware export pipeline."
+    private func runSingleOfflineExport() {
+        isExporting = true
+        exportProgress = 0.0
+        exportStatusText = ""
+        exportedFileURL = nil
+
+        if engine.activeMediaKind == .photo, let photoCI = engine.currentPhotoImage {
+            let outURL = FileManager.default.temporaryDirectory
+                .appendingPathComponent("ColorDisco_Photo_\(Int(Date().timeIntervalSince1970)).\(selectedPhotoFormat.fileExtension)")
+            Task {
+                do {
+                    try batchExporter.exportGradedPhoto(
+                        sourceImage: photoCI,
+                        outputURL: outURL,
+                        engine: engine,
+                        parameters: engine.parameters,
+                        format: selectedPhotoFormat
+                    )
+                    await MainActor.run {
+                        self.exportProgress = 1.0
+                        self.isExporting = false
+                        self.exportedFileURL = outURL
+                        self.engine.statusBannerMessage = "Exported Photo (\(selectedPhotoFormat.fileExtension.uppercased()))"
+                    }
+                } catch {
+                    await MainActor.run {
+                        self.isExporting = false
+                        self.activeErrorMessage = error.localizedDescription
+                    }
+                }
+            }
             return
         }
 
-        isExporting = true
-        exportProgress = 0.0
-        exportedFileURL = nil
+        guard let asset = engine.currentAsset else {
+            isExporting = false
+            activeErrorMessage = "Load a video clip or ProRAW/photo before starting export."
+            return
+        }
 
         let outputURL = FileManager.default.temporaryDirectory
             .appendingPathComponent("ColorDisco_Rec709_\(Int(Date().timeIntervalSince1970)).mp4")
 
-        let stream = exporter.exportSocialMaster(
+        let stream = videoExporter.exportSocialMaster(
             asset: asset,
             outputURL: outputURL,
             engine: engine,
@@ -786,9 +1195,129 @@ public struct ContentView: View {
             }
         }
     }
+
+    private func runBatchOfflineExport() {
+        guard !batchQueue.isEmpty else { return }
+        isExporting = true
+        exportProgress = 0.0
+        let outDir = FileManager.default.temporaryDirectory
+
+        let stream = batchExporter.exportBatch(
+            items: batchQueue,
+            outputDirectory: outDir,
+            engine: engine,
+            parameters: engine.parameters,
+            aspectPreset: selectedAspectRatio,
+            frameRatePreset: selectedFrameRate,
+            photoFormat: selectedPhotoFormat
+        )
+
+        Task {
+            do {
+                for try await batchStatus in stream {
+                    await MainActor.run {
+                        self.exportProgress = batchStatus.overallFraction
+                        self.exportStatusText = "Batch (\(batchStatus.completedItems)/\(batchStatus.totalItems)): \(batchStatus.currentFileName)"
+                    }
+                }
+                await MainActor.run {
+                    self.isExporting = false
+                    self.exportedFileURL = outDir
+                    self.engine.statusBannerMessage = "Completed Batch Export (\(batchQueue.count) items)"
+                }
+            } catch {
+                await MainActor.run {
+                    self.isExporting = false
+                    self.activeErrorMessage = error.localizedDescription
+                }
+            }
+        }
+    }
 }
 
-// MARK: - Subcomponents (@samdesain 10% Fallback Modules)
+// MARK: - Subcomponents (@samdesain 10% Fallback Modules: Curves, Wheels, Sliders)
+
+private struct ToneCurveInteractiveView: View {
+    @Binding var points: CurvePoints
+    let channel: CurveChannel
+
+    private var strokeColor: Color {
+        switch channel {
+        case .masterLuma: return .white
+        case .red: return .red
+        case .green: return .green
+        case .blue: return .blue
+        }
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            let w = max(geo.size.width, 1)
+            let h = max(geo.size.height, 1)
+
+            ZStack {
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(Color(red: 0.05, green: 0.05, blue: 0.065))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(Color.primary.opacity(0.20), lineWidth: 1)
+                    )
+
+                // Quarter grid lines + diagonal reference
+                Path { path in
+                    for f in [0.25, 0.50, 0.75] {
+                        path.move(to: CGPoint(x: w * f, y: 0))
+                        path.addLine(to: CGPoint(x: w * f, y: h))
+                        path.move(to: CGPoint(x: 0, y: h * f))
+                        path.addLine(to: CGPoint(x: w, y: h * f))
+                    }
+                    path.move(to: CGPoint(x: 0, y: h))
+                    path.addLine(to: CGPoint(x: w, y: 0))
+                }
+                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+
+                // Spline Path
+                Path { path in
+                    let pts = [points.p0, points.p1, points.p2, points.p3, points.p4]
+                    for (idx, pt) in pts.enumerated() {
+                        let cgPt = CGPoint(x: CGFloat(pt.x) * w, y: (1.0 - CGFloat(pt.y)) * h)
+                        if idx == 0 {
+                            path.move(to: cgPt)
+                        } else {
+                            path.addLine(to: cgPt)
+                        }
+                    }
+                }
+                .stroke(strokeColor, lineWidth: 2)
+
+                // 5 Interactive Control Handles
+                curveHandle(point: $points.p0, width: w, height: h)
+                curveHandle(point: $points.p1, width: w, height: h)
+                curveHandle(point: $points.p2, width: w, height: h)
+                curveHandle(point: $points.p3, width: w, height: h)
+                curveHandle(point: $points.p4, width: w, height: h)
+            }
+        }
+    }
+
+    private func curveHandle(point: Binding<CurveControlPoint>, width: CGFloat, height: CGFloat) -> some View {
+        Circle()
+            .fill(Color(red: 0.96, green: 0.62, blue: 0.04))
+            .frame(width: 14, height: 14)
+            .overlay(Circle().stroke(Color.black, lineWidth: 1.5))
+            .position(
+                x: CGFloat(point.wrappedValue.x) * width,
+                y: (1.0 - CGFloat(point.wrappedValue.y)) * height
+            )
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { drag in
+                        let newY = Float(1.0 - min(max(drag.location.y / height, 0.0), 1.0))
+                        point.wrappedValue.y = newY
+                    }
+            )
+    }
+}
 
 private struct ParameterSliderRow: View {
     let label: String
@@ -882,4 +1411,3 @@ private struct ColorWheelControl: View {
         .clipShape(RoundedRectangle(cornerRadius: 6))
     }
 }
-
