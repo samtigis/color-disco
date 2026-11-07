@@ -159,3 +159,4 @@ public struct ScopesView: View {
         context.stroke(path, with: .color(color), lineWidth: 1.5)
     }
 }
+

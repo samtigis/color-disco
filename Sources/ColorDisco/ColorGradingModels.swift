@@ -280,3 +280,4 @@ public struct GradingParameters: Codable, Equatable, Sendable {
         hslSegments.values.contains { !$0.isIdentity }
     }
 }
+

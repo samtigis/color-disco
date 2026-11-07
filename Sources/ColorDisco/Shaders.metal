@@ -208,3 +208,4 @@ kernel void computeScopesTelemetryKernel(
     atomic_fetch_add_explicit(&histogramBins[2u * 64u + bBin], 1u, memory_order_relaxed);
     atomic_fetch_add_explicit(&histogramBins[3u * 64u + ireBucket], 1u, memory_order_relaxed);
 }
+
