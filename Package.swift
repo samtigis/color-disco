@@ -18,7 +18,8 @@ let package = Package(
             name: "ColorDisco",
             path: "Sources/ColorDisco",
             resources: [
-                .process("Shaders.metal")
+                .process("Shaders.metal"),
+                .process("Resources")
             ]
         ),
         .testTarget(

@@ -4,6 +4,10 @@
 Reading this as: Professional Video Color Grading Studio for Apple Ecosystem Creators and Colorists, in an iOS 26 Liquid Glass + Utilitarian Swiss Darkroom style, dial ENERGY 1 / RHYTHM 2 / MOTION 1.
 
 - **Product Identity**: Studio-grade, offline-first color grading tool for iPhone (iOS), iPad (iPadOS), and Mac (macOS).
+- **Official Brand Asset Hierarchy (`@samios` Placement Rules)**:
+  - **`disco-icon.png` (`DiscoIcon` / `AppIcon`)**: Icon-only iOS 26 Liquid Glass squircle chameleon icon. Used exclusively for the native App Icon (`Assets.xcassets/AppIcon.appiconset`), browser favicon/touch-icon, macOS window titlebar icon badge, and Export Sheet header badge.
+  - **`logo-text-only.png` (`DiscoLogoText`)**: Wordmark-only (`disco`). Used inside the compact iOS 26 Navigation Bar inline center slot (`.ios-navbar__inline-title` / `topNavigationBar`) so the top bar remains uncluttered alongside leading/trailing glass bar-buttons.
+  - **`icon-logo-text.png` (`DiscoIconLogoText`)**: Full horizontal lockup (chameleon icon + `disco` wordmark). Used in spacious structural areas: the iPad/Mac Sidebar brand header, the Empty State (`.ios-empty`) hero lockup before media is loaded, and the top Studio Harness bar.
 - **Design System Composition (`@samios`)**:
   - **90% Primary (`@samios` iOS 26 Kit)**: Native `.ios-surface`, `ios.css` components (`Status Bar`, `Navigation Bar`, `Liquid Glass` on floating bars only, `Segmented Control`, `Slider`, `Switch`, `Chips`, `List`, `Toolbar`, `Sheet`, `Progress`, `HUD`, `Empty State`, `Alert`, `Search Bar`, `Home Indicator`).
   - **10% Fallback (`@samdesain` Swiss Minimalist)**: Custom professional colorist instrumentation not present in standard iOS 26 controls:

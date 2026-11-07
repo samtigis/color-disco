@@ -125,3 +125,4 @@ final class ColorDiscoTests: XCTestCase {
         XCTAssertEqual(scopes.lumaHistogram.count, 32)
     }
 }
+

@@ -159,6 +159,8 @@ public struct ContentView: View {
         NavigationSplitView {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
+                    BrandAssetView(variant: .iconLogoText, height: 30)
+                        .padding(.bottom, 2)
                     ScopesView(telemetry: engine.scopeTelemetry)
                     lutBrowserPanel
                     gradeClipboardAndPresetsPanel
@@ -214,6 +216,8 @@ public struct ContentView: View {
         NavigationSplitView {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
+                    BrandAssetView(variant: .iconLogoText, height: 32)
+                        .padding(.bottom, 2)
                     ScopesView(telemetry: engine.scopeTelemetry)
                     lutBrowserPanel
                     gradeClipboardAndPresetsPanel
@@ -317,8 +321,8 @@ public struct ContentView: View {
 
             Spacer()
 
-            Text("Pro Grade Studio")
-                .font(.system(size: 14, weight: .semibold))
+            // @samios Rule: Use wordmark-only (`logo-text-only.png`) inside compact Navigation Bar inline title
+            BrandAssetView(variant: .logoTextOnly, height: 20)
 
             Spacer()
 
@@ -967,7 +971,8 @@ public struct ContentView: View {
 
     private var exportMasterSheet: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack {
+            HStack(spacing: 10) {
+                BrandAssetView(variant: .iconOnly, height: 28)
                 Text("Master Social & Batch Exporter (Rec. 709 SDR)")
                     .font(.headline)
                 Spacer()

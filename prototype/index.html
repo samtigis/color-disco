@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pro Grade Studio : Dual Video & Photo Color Suite (@samios)</title>
+  <title>disco : Dual Video & Photo Color Suite (@samios)</title>
+  <link rel="icon" type="image/png" href="assets/disco-icon.png">
+  <link rel="apple-touch-icon" href="assets/disco-icon.png">
   <link rel="stylesheet" href="https://aiuxplayground.com/kits/ios-26/v1/ios.css">
   <style>
     :root {
@@ -75,6 +77,21 @@
       align-items: center;
       gap: 8px;
       flex-wrap: wrap;
+    }
+
+    .brand-lockup-img,
+    .brand-wordmark-img {
+      display: block;
+      width: auto;
+      object-fit: contain;
+    }
+
+    body.light-env .brand-lockup-img,
+    .ios-surface:not(.dark) .brand-lockup-img,
+    .ios-surface:not(.dark) .brand-wordmark-img {
+      background: #121215;
+      padding: 3px 8px;
+      border-radius: 6px;
     }
 
     .harness-title {
@@ -530,7 +547,7 @@
   <!-- Top Prototype Verification Bar -->
   <nav class="studio-harness" aria-label="Prototype Environment Controls">
     <div class="harness-brand">
-      <span class="harness-title">Pro Grade Studio</span>
+      <img src="assets/icon-logo-text.png" class="brand-lockup-img" alt="Disco Logo Lockup" style="height:28px">
       <span class="harness-tag">Dual Video & Photo (ProRAW/Log)</span>
       <span class="harness-tag">90% @samios + 10% @samdesain</span>
     </div>
@@ -565,7 +582,10 @@
           <span class="mac-dot" style="background:#ffbd2e"></span>
           <span class="mac-dot" style="background:#27c93f"></span>
         </div>
-        <span>Pro Grade Studio : Video (Apple Log / 4K60) & Photo (ProRAW / DNG)</span>
+        <span style="display:inline-flex;align-items:center;gap:6px">
+          <img src="assets/disco-icon.png" alt="Disco App Icon" style="width:16px;height:16px;border-radius:4px">
+          <span>disco Studio : Video (Apple Log / 4K60) & Photo (ProRAW / DNG)</span>
+        </span>
         <span>[Space] Play  [\] Split  [C/V] Copy/Paste Grade  [E] Export</span>
       </div>
 
@@ -596,7 +616,9 @@
               </button>
             </div>
           </div>
-          <h1 class="ios-navbar__inline-title">Pro Grade Studio</h1>
+          <h1 class="ios-navbar__inline-title" style="display:flex;align-items:center;justify-content:center">
+            <img src="assets/logo-text-only.png" class="brand-wordmark-img" alt="disco" style="height:19px">
+          </h1>
           <div class="ios-navbar__trailing">
             <div class="ios-barbutton-group">
               <button type="button" class="ios-barbutton" aria-label="Copy Grade" onclick="copyGrade()">
@@ -619,7 +641,7 @@
 
       <!-- Empty State View (.ios-empty) -->
       <div id="emptyStateContainer" class="ios-empty hidden-pane" style="flex:1;padding:48px 24px">
-        <i class="ios-icon ios-icon--camera"></i>
+        <img src="assets/icon-logo-text.png" class="brand-lockup-img" alt="Disco Studio" style="height:46px;margin:0 auto 12px">
         <h2>No Video or Photo Loaded</h2>
         <p>Import an Apple Log video, 4K60 HDR clip, or Apple ProRAW (.DNG / HEIC) still photo, or load the built-in studio reference scene.</p>
         <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px">
@@ -633,6 +655,10 @@
 
         <!-- Left Sidebar (Visible on iPad & Mac Split View) -->
         <aside class="sidebar-luts" aria-label="LUTs and Grade Management Sidebar">
+          <div style="padding:2px 4px 10px;display:flex;align-items:center;justify-content:space-between">
+            <img src="assets/icon-logo-text.png" class="brand-lockup-img" alt="Disco Studio" style="height:28px">
+            <span class="harness-tag" style="font-size:9px">PRO</span>
+          </div>
           <label class="ios-search" data-variant="filled">
             <i class="ios-icon ios-icon--search"></i>
             <input type="search" placeholder="Search .cube LUTs (17^3-65^3)" aria-label="Search LUTs" oninput="filterLUTList(this.value)">
@@ -952,7 +978,10 @@
                 <i class="ios-icon ios-icon--xmark"></i>
               </button>
             </div>
-            <h2 class="ios-sheet__title">Batch Video & Photo Export</h2>
+            <h2 class="ios-sheet__title" style="display:inline-flex;align-items:center;gap:6px">
+              <img src="assets/disco-icon.png" alt="Disco Icon" style="width:20px;height:20px;border-radius:5px">
+              <span>Batch Video & Photo Export</span>
+            </h2>
             <div class="ios-sheet__trailing">
               <button type="button" class="ios-barbutton" data-variant="prominent" aria-label="Done" onclick="closeOverlays(event)">
                 <i class="ios-icon ios-icon--checkmark"></i>

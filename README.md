@@ -1,6 +1,18 @@
 # ColorDisco : Pro Grade Studio (iOS, iPadOS, macOS)
 
+<p align="left">
+  <img src="icon-logo-text.png" alt="ColorDisco Logo Lockup" height="64">
+</p>
+
 Studio-grade, 100% offline-first **Dual Video & Photo Native Color Suite** for **iOS (iPhone)**, **iPadOS (iPad)**, and **macOS (Mac)** built with Swift 5.9+/6, SwiftUI, Metal (`MTKView` + custom MSL compute & fragment shaders), Core Image (`CIContext` + `CIRAWFilter`), Accelerate (`vImage`), and AVFoundation (`AVAssetReader` / `AVAssetWriter`).
+
+## Brand Assets & `@samios` Placement
+
+| Asset File | Asset Catalog Name | `@samios` UI/UX Placement |
+| :--- | :--- | :--- |
+| `disco-icon.png` | `AppIcon` / `DiscoIcon` | **Icon Only**: Native iOS/iPadOS/macOS App Icon (`AppIcon.appiconset`), favicon/apple-touch-icon, macOS window bar badge, and Export Sheet header badge. |
+| `logo-text-only.png` | `DiscoLogoText` | **Logo Text Only**: Compact iOS 26 Navigation Bar inline title (`.ios-navbar__inline-title`) on iPhone & iPad to keep the top bar balanced. |
+| `icon-logo-text.png` | `DiscoIconLogoText` | **Icon + Logo Lockup**: Primary studio header inside the iPad/Mac Split-View Sidebar, Empty State (`.ios-empty`) hero lockup, and top Studio Harness bar. |
 
 ## Full Feature Set
 
