@@ -124,5 +124,14 @@ final class ColorDiscoTests: XCTestCase {
         XCTAssertEqual(scopes.redHistogram.count, 32)
         XCTAssertEqual(scopes.lumaHistogram.count, 32)
     }
+
+    func testDiscoBrandAssetVariantsMapToAssetCatalogNames() {
+        XCTAssertEqual(DiscoBrandVariant.iconOnly.rawValue, "DiscoIcon")
+        XCTAssertEqual(DiscoBrandVariant.logoTextOnly.rawValue, "DiscoLogoText")
+        XCTAssertEqual(DiscoBrandVariant.iconLogoText.rawValue, "DiscoIconLogoText")
+        XCTAssertEqual(DiscoBrandVariant.iconOnly.accessibilityLabel, "Disco App Icon")
+        XCTAssertEqual(DiscoBrandVariant.logoTextOnly.accessibilityLabel, "Disco Wordmark")
+        XCTAssertEqual(DiscoBrandVariant.iconLogoText.accessibilityLabel, "Disco Studio Brand Lockup")
+    }
 }
 
