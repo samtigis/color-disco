@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ColorDisco Studio : Apple Ecosystem Video Color Grader (@samios)</title>
+  <link rel="stylesheet" href="https://aiuxplayground.com/kits/ios-26/v1/ios.css">
+  <style>
+    :root {
+      --zinc-950: #09090b;
+      --zinc-900: #121215;
+      --zinc-850: #18181b;
+      --zinc-800: #27272a;
+      --zinc-700: #3f3f46;
+      --zinc-400: #a1a1aa;
+      --zinc-300: #d4d4d8;
+      --zinc-200: #e4e4e7;
+      --zinc-100: #f4f4f5;
+      --zinc-50: #fafafa;
+      --accent-amber: #f59e0b;
+      --accent-amber-light: #b45309;
+      --mono-font: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--zinc-950);
+      color: var(--zinc-50);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    body.light-env {
+      background: #e4e4e7;
+      color: var(--zinc-950);
+    }
+
+    /* Keyboard Focus Accessibility (R-32) */
+    button:focus-visible,
+    input:focus-visible,
+    a:focus-visible,
+    label:focus-within {
+      outline: 2px solid var(--accent-amber) !important;
+      outline-offset: 2px !important;
+    }
+
+    /* Studio Prototype Top Harness (@samdesain Utilitarian Strip) */
+    .studio-harness {
+      width: 100%;
+      max-width: 1360px;
+      padding: 10px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid var(--zinc-800);
+      background: var(--zinc-900);
+    }
+
+    body.light-env .studio-harness {
+      background: #ffffff;
+      border-bottom-color: var(--zinc-300);
+      color: var(--zinc-950);
+    }
+
+    .harness-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .harness-title {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .harness-tag {
+      font-family: var(--mono-font);
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--zinc-700);
+      color: var(--zinc-300);
+      background: var(--zinc-850);
+    }
+
+    body.light-env .harness-tag {
+      background: var(--zinc-100);
+      border-color: var(--zinc-300);
+      color: #3f3f46;
+    }
+
+    .harness-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .harness-btn {
+      appearance: none;
+      border: 1px solid var(--zinc-700);
+      background: var(--zinc-850);
+      color: var(--zinc-50);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 10px;
+      min-height: 34px;
+      border-radius: 5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    body.light-env .harness-btn {
+      background: var(--zinc-100);
+      border-color: var(--zinc-300);
+      color: var(--zinc-950);
+    }
+
+    .harness-btn[aria-pressed="true"] {
+      background: var(--accent-amber);
+      color: #09090b;
+      border-color: var(--accent-amber);
+      font-weight: 600;
+    }
+
+    /* Main Stage Container */
+    .stage-wrap {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      padding: 16px 8px 32px;
+    }
+
+    /* .ios-surface Adaptive Device Scaling (iPhone / iPad / Mac) */
+    .ios-surface.device-frame {
+      position: relative;
+      width: 402px;
+      max-width: 100%;
+      min-height: 852px;
+      border-radius: 44px;
+      border: 1px solid var(--zinc-800);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: width 0.2s ease, border-radius 0.2s ease;
+    }
+
+    .ios-surface.device-frame[data-device="ipad"] {
+      width: 1024px;
+      min-height: 740px;
+      border-radius: 24px;
+    }
+
+    .ios-surface.device-frame[data-device="mac"] {
+      width: 1240px;
+      min-height: 760px;
+      border-radius: 12px;
+    }
+
+    @media (max-width: 440px) {
+      .ios-surface.device-frame {
+        width: 100%;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+      }
+    }
+
+    /* macOS Window Traffic Lights Bar (shown only in Mac mode) */
+    .mac-window-bar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+      font-size: 12px;
+      font-family: var(--mono-font);
+    }
+
+    .ios-surface.device-frame[data-device="mac"] .mac-window-bar {
+      display: flex;
+    }
+
+    .ios-surface.device-frame[data-device="mac"] .ios-island,
+    .ios-surface.device-frame[data-device="mac"] .ios-statusbar,
+    .ios-surface.device-frame[data-device="mac"] .ios-home-indicator {
+      display: none;
+    }
+
+    .ios-surface.device-frame[data-device="ipad"] .ios-island {
+      display: none;
+    }
+
+    .mac-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .mac-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* Multi-Column Adaptive Workspace Grid */
+    .workspace-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .ios-surface.device-frame[data-device="ipad"] .workspace-body,
+    .ios-surface.device-frame[data-device="mac"] .workspace-body {
+      flex-direction: row;
+    }
+
+    /* Left Sidebar for iPad / Mac */
+    .sidebar-luts {
+      display: none;
+      width: 260px;
+      border-right: 1px solid rgba(128, 128, 128, 0.2);
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .ios-surface.device-frame[data-device="ipad"] .sidebar-luts,
+    .ios-surface.device-frame[data-device="mac"] .sidebar-luts {
+      display: flex;
+    }
+
+    .center-viewport-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .inspector-column {
+      display: flex;
+      flex-direction: column;
+      border-top: 1px solid rgba(128, 128, 128, 0.2);
+      max-height: 410px;
+      overflow-y: auto;
+    }
+
+    .ios-surface.device-frame[data-device="ipad"] .inspector-column,
+    .ios-surface.device-frame[data-device="mac"] .inspector-column {
+      width: 350px;
+      max-height: none;
+      border-top: none;
+      border-left: 1px solid rgba(128, 128, 128, 0.2);
+    }
+
+    /* 10% @samdesain Fallback Module 1: Video Canvas & Telemetry Bar */
+    .canvas-stage {
+      position: relative;
+      width: 100%;
+      height: 290px;
+      background: #09090b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      user-select: none;
+      border-top: 1px solid rgba(128, 128, 128, 0.18);
+      border-bottom: 1px solid rgba(128, 128, 128, 0.18);
+    }
+
+    .ios-surface.device-frame[data-device="ipad"] .canvas-stage,
+    .ios-surface.device-frame[data-device="mac"] .canvas-stage {
+      flex: 1;
+      height: auto;
+      min-height: 420px;
+    }
+
+    #gradingCanvas {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .telemetry-strip {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      right: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      pointer-events: none;
+      z-index: 4;
+    }
+
+    .telemetry-pill {
+      font-family: var(--mono-font);
+      font-size: 10px;
+      font-variant-numeric: tabular-nums;
+      padding: 3px 6px;
+      border-radius: 4px;
+      background: rgba(9, 9, 11, 0.86);
+      color: #f4f4f5;
+      border: 1px solid #27272a;
+    }
+
+    .telemetry-pill.accent {
+      color: #fbbf24;
+      border-color: rgba(245, 158, 11, 0.6);
+    }
+
+    /* Interactive Split Wipe Line */
+    .split-wipe-overlay {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #fafafa;
+      z-index: 5;
+      cursor: ew-resize;
+    }
+
+    .split-handle-pill {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(9, 9, 11, 0.9);
+      border: 1px solid #3f3f46;
+      border-radius: 4px;
+      padding: 3px 6px;
+      font-family: var(--mono-font);
+      font-size: 10px;
+      color: #fafafa;
+      white-space: nowrap;
+    }
+
+    /* 10% @samdesain Fallback Module 2: 3-Way Color Wheels (Lift / Gamma / Gain) */
+    .wheels-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 12px 14px;
+    }
+
+    .wheel-card {
+      border: 1px solid rgba(128, 128, 128, 0.24);
+      border-radius: 6px;
+      padding: 8px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      background: rgba(128, 128, 128, 0.05);
+    }
+
+    .wheel-label {
+      font-family: var(--mono-font);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .wheel-ring {
+      position: relative;
+      width: 78px;
+      height: 78px;
+      border-radius: 50%;
+      border: 1px solid rgba(128, 128, 128, 0.4);
+      background: radial-gradient(circle, rgba(128,128,128,0.12) 0%, rgba(9,9,11,0.45) 100%);
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    .wheel-ring::before,
+    .wheel-ring::after {
+      content: "";
+      position: absolute;
+      background: rgba(128, 128, 128, 0.25);
+    }
+
+    .wheel-ring::before {
+      top: 6px;
+      bottom: 6px;
+      left: 50%;
+      width: 1px;
+    }
+
+    .wheel-ring::after {
+      left: 6px;
+      right: 6px;
+      top: 50%;
+      height: 1px;
+    }
+
+    .wheel-puck {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent-amber);
+      border: 1.5px solid #09090b;
+      transform: translate(-50%, -50%);
+      left: 50%;
+      top: 50%;
+      pointer-events: none;
+    }
+
+    .wheel-readout {
+      font-family: var(--mono-font);
+      font-size: 10px;
+      font-variant-numeric: tabular-nums;
+      opacity: 0.85;
+    }
+
+    .slider-block {
+      padding: 10px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .slider-val {
+      font-family: var(--mono-font);
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .hidden-pane {
+      display: none !important;
+    }
+
+    .shortcut-hint-bar {
+      padding: 6px 14px;
+      font-family: var(--mono-font);
+      font-size: 11px;
+      border-top: 1px solid rgba(128, 128, 128, 0.18);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      opacity: 0.85;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Prototype Verification Bar (Switch Device, Theme, and R-27 States) -->
+  <nav class="studio-harness" aria-label="Prototype Environment Controls">
+    <div class="harness-brand">
+      <span class="harness-title">ColorDisco Prototype</span>
+      <span class="harness-tag">90% @samios (iOS 26 Kit) + 10% @samdesain</span>
+      <span class="harness-tag">Dial: E1 / R2 / M1</span>
+    </div>
+
+    <div class="harness-controls" role="group" aria-label="Device Mode">
+      <button type="button" class="harness-btn" id="btnDeviceIphone" aria-pressed="true" onclick="setDeviceMode('iphone')">iPhone (iOS 26)</button>
+      <button type="button" class="harness-btn" id="btnDeviceIpad" aria-pressed="false" onclick="setDeviceMode('ipad')">iPad (Split View)</button>
+      <button type="button" class="harness-btn" id="btnDeviceMac" aria-pressed="false" onclick="setDeviceMode('mac')">Mac (Pro NLE)</button>
+    </div>
+
+    <div class="harness-controls" role="group" aria-label="UI States and Theme">
+      <button type="button" class="harness-btn" id="btnStateActive" aria-pressed="true" onclick="setUIState('active')">State: Active Clip</button>
+      <button type="button" class="harness-btn" id="btnStateEmpty" aria-pressed="false" onclick="setUIState('empty')">State: Empty</button>
+      <button type="button" class="harness-btn" id="btnStateExport" aria-pressed="false" onclick="openExportSheet()">State: Exporting</button>
+      <button type="button" class="harness-btn" id="btnStateError" aria-pressed="false" onclick="openErrorAlert()">State: LUT Error</button>
+      <button type="button" class="harness-btn" id="btnThemeToggle" aria-pressed="true" onclick="toggleTheme()">Theme: Dark</button>
+    </div>
+  </nav>
+
+  <!-- Hidden File Inputs for Real Video & .cube LUT Testing -->
+  <input type="file" id="realVideoInput" accept="video/*" style="display:none" onchange="handleVideoFile(event)">
+  <input type="file" id="realCubeInput" accept=".cube,.png" style="display:none" onchange="handleCubeFile(event)">
+
+  <main class="stage-wrap">
+    <!-- Primary @samios Container: .ios-surface -->
+    <div class="ios-surface dark device-frame" id="iosSurface" data-device="iphone" data-bg="grouped">
+
+      <!-- macOS Window Header (Visible in Mac mode) -->
+      <div class="mac-window-bar">
+        <div class="mac-dots" aria-hidden="true">
+          <span class="mac-dot" style="background:#ff5f56"></span>
+          <span class="mac-dot" style="background:#ffbd2e"></span>
+          <span class="mac-dot" style="background:#27c93f"></span>
+        </div>
+        <span>ColorDisco Studio Pro : Rec.709 Master Pipeline (Metal + CoreImage)</span>
+        <span>Shortcuts: [Space] Play  [\] Split  [E] Export</span>
+      </div>
+
+      <!-- iOS 26 Component 1: Dynamic Island & Status Bar -->
+      <div class="ios-island"></div>
+      <div class="ios-statusbar">
+        <div class="ios-statusbar__row">
+          <span class="ios-statusbar__time">9:41</span>
+          <span class="ios-statusbar__island-gap"></span>
+          <span class="ios-statusbar__icons">
+            <i class="ios-icon ios-icon--cellular"></i>
+            <i class="ios-icon ios-icon--wifi"></i>
+            <span class="ios-battery" style="--level:94"><i></i></span>
+          </span>
+        </div>
+      </div>
+
+      <!-- iOS 26 Component 2: Navigation Bar -->
+      <header class="ios-navbar">
+        <div class="ios-navbar__bar">
+          <div class="ios-navbar__leading">
+            <div class="ios-barbutton-group">
+              <button type="button" class="ios-barbutton" aria-label="Import Video Clip" onclick="document.getElementById('realVideoInput').click()">
+                <i class="ios-icon ios-icon--folder" style="--w:18px;--h:18px"></i>
+              </button>
+              <button type="button" class="ios-barbutton" aria-label="Import .cube LUT" onclick="document.getElementById('realCubeInput').click()">
+                <i class="ios-icon ios-icon--plus" style="--w:18px;--h:18px"></i>
+              </button>
+            </div>
+          </div>
+          <h1 class="ios-navbar__inline-title">ColorDisco Rec.709</h1>
+          <div class="ios-navbar__trailing">
+            <div class="ios-barbutton-group">
+              <button type="button" class="ios-barbutton" aria-label="Reset Grade" onclick="resetAllGrading()">Reset</button>
+              <button type="button" class="ios-barbutton" data-variant="prominent" aria-label="Export Master Video" onclick="openExportSheet()">
+                <i class="ios-icon ios-icon--share" style="--w:18px;--h:18px"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- iOS 26 Component 3: HUD Confirmation Pill -->
+      <div id="hudBanner" class="ios-hud" data-variant="pill" role="status" style="margin:6px auto;display:none">
+        <i class="ios-icon ios-icon--circle-check"></i>
+        <span id="hudText">Applied Kodak 2383 LUT</span>
+      </div>
+
+      <!-- Empty State View (iOS 26 Component 4: .ios-empty, shown when State = Empty) -->
+      <div id="emptyStateContainer" class="ios-empty hidden-pane" style="flex:1;padding:48px 24px">
+        <i class="ios-icon ios-icon--image"></i>
+        <h2>No Video Clip Loaded</h2>
+        <p>Import a Log, HDR (Dolby Vision / HLG), or SDR video clip, or load the built-in 60fps reference test scene to begin grading.</p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px">
+          <button type="button" class="ios-button" data-variant="filled" onclick="setUIState('active')">Load Reference Scene</button>
+          <button type="button" class="ios-button" data-variant="gray" onclick="document.getElementById('realVideoInput').click()">Open Video File</button>
+        </div>
+      </div>
+
+      <!-- Active Grading Workspace -->
+      <div id="activeWorkspace" class="workspace-body">
+
+        <!-- Left Sidebar (Visible on iPad & Mac Split View) -->
+        <aside class="sidebar-luts" aria-label="LUT Library Sidebar">
+          <label class="ios-search" data-variant="filled">
+            <i class="ios-icon ios-icon--search"></i>
+            <input type="search" placeholder="Search .cube LUTs" aria-label="Search LUTs" oninput="filterLUTList(this.value)">
+          </label>
+          <div class="ios-list" style="padding:10px 0">
+            <section class="ios-list__section">
+              <h2 class="ios-list__header">3D LUT Presets (32^3 Float)</h2>
+              <div class="ios-list__group">
+                <label class="ios-row"><input type="radio" name="sidebarLut" checked onchange="applyLUTPreset('rec709', 'Rec.709 Natural Neutral')"><div class="ios-row__body"><span class="ios-row__title">Rec.709 Natural Neutral</span><i class="ios-row__check ios-icon ios-icon--checkmark" style="--w:17px;--h:16px"></i></div></label>
+                <label class="ios-row"><input type="radio" name="sidebarLut" onchange="applyLUTPreset('kodak2383', 'Kodak 2383 Film Print')"><div class="ios-row__body"><span class="ios-row__title">Kodak 2383 Film Print</span><i class="ios-row__check ios-icon ios-icon--checkmark" style="--w:17px;--h:16px"></i></div></label>
+                <label class="ios-row"><input type="radio" name="sidebarLut" onchange="applyLUTPreset('tungsten', 'Cine Tungsten & Amber')"><div class="ios-row__body"><span class="ios-row__title">Cine Tungsten & Amber</span><i class="ios-row__check ios-icon ios-icon--checkmark" style="--w:17px;--h:16px"></i></div></label>
+                <label class="ios-row"><input type="radio" name="sidebarLut" onchange="applyLUTPreset('bleach', 'Silver Bleach Retention')"><div class="ios-row__body"><span class="ios-row__title">Silver Bleach Retention</span><i class="ios-row__check ios-icon ios-icon--checkmark" style="--w:17px;--h:16px"></i></div></label>
+                <label class="ios-row"><input type="radio" name="sidebarLut" onchange="applyLUTPreset('applelog', 'Apple Log to Rec.709')"><div class="ios-row__body"><span class="ios-row__title">Apple Log to Rec.709</span><i class="ios-row__check ios-icon ios-icon--checkmark" style="--w:17px;--h:16px"></i></div></label>
+              </div>
+              <p class="ios-list__footer">Drop any Adobe/Resolve .cube file onto the canvas to load custom 3D LUT cubes.</p>
+            </section>
+          </div>
+          <button type="button" class="ios-button" data-variant="tinted" data-block onclick="document.getElementById('realCubeInput').click()">Import .cube File</button>
+        </aside>
+
+        <!-- Center Column: Metal/Canvas Viewport + iOS 26 Toolbar -->
+        <section class="center-viewport-column" aria-label="Video Grading Viewport">
+          <div class="canvas-stage" id="canvasStage" ondragover="event.preventDefault()" ondrop="handleCanvasDrop(event)">
+            <canvas id="gradingCanvas" width="720" height="480" aria-label="Real-time 60fps graded video preview"></canvas>
+
+            <!-- 10% @samdesain Fallback: Technical Telemetry Strip -->
+            <div class="telemetry-strip">
+              <span class="telemetry-pill accent" id="badgeColorSpace">HDR PQ -> Rec.709 SDR</span>
+              <span class="telemetry-pill" id="badgeResolution">1080x1920 (9:16)</span>
+              <span class="telemetry-pill" id="badgeFPS">60 FPS CFR</span>
+              <span class="telemetry-pill" id="badgeDither">DITHER 0.5 LSB</span>
+              <span class="telemetry-pill" id="badgeActiveLUT">LUT: Rec.709 Natural</span>
+            </div>
+
+            <!-- Interactive Split-Screen Before/After Wipe Handle -->
+            <div class="split-wipe-overlay" id="splitWipeBar" style="left: 55%;">
+              <div class="split-handle-pill">GRADED | ORIGINAL</div>
+            </div>
+          </div>
+
+          <!-- iOS 26 Component 5: Toolbar (Transport & Split Comparison Actions) -->
+          <div class="ios-toolbar" style="width:100%">
+            <div class="ios-barbutton-group">
+              <button type="button" class="ios-barbutton" aria-label="Step Backward" onclick="stepFrame(-1)">
+                <i class="ios-icon ios-icon--backward"></i>
+              </button>
+              <button type="button" class="ios-barbutton" id="btnPlayPause" aria-label="Play or Pause" onclick="togglePlayback()">
+                <i class="ios-icon ios-icon--pause" id="playPauseIcon"></i>
+              </button>
+              <button type="button" class="ios-barbutton" aria-label="Step Forward" onclick="stepFrame(1)">
+                <i class="ios-icon ios-icon--forward"></i>
+              </button>
+            </div>
+            <span class="ios-toolbar__label"><b id="timecodeReadout" style="font-family:var(--mono-font);font-size:12px">00:00:04:18</b></span>
+            <div class="ios-barbutton-group">
+              <button type="button" class="ios-barbutton" id="btnToggleSplit" aria-label="Toggle Split Screen Comparison" onclick="toggleSplitWipe()">
+                Split
+              </button>
+              <button type="button" class="ios-barbutton" id="btnBypassHold" aria-label="Bypass Grade" onmousedown="setBypass(true)" onmouseup="setBypass(false)" onmouseleave="setBypass(false)" onclick="toggleBypassClick()">
+                Orig
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Right/Bottom Inspector Deck -->
+        <aside class="inspector-column" aria-label="Grading Controls Deck">
+          <!-- iOS 26 Component 6: Segmented Control -->
+          <div style="padding: 10px 14px 4px;">
+            <div class="ios-segmented" style="--n:4" role="radiogroup" aria-label="Grading Deck Mode">
+              <label><input type="radio" name="deckTab" value="luts" checked onchange="switchDeckTab('luts')">LUTs</label>
+              <label><input type="radio" name="deckTab" value="wheels" onchange="switchDeckTab('wheels')">Wheels</label>
+              <label><input type="radio" name="deckTab" value="sliders" onchange="switchDeckTab('sliders')">Sliders</label>
+              <label><input type="radio" name="deckTab" value="export" onchange="switchDeckTab('export')">Export</label>
+            </div>
+          </div>
+
+          <!-- TAB 1: 3D LUTs & Categories (iOS 26 Chips + List + Slider) -->
+          <div id="tabPaneLuts">
+            <!-- iOS 26 Component 7: Chips -->
+            <div class="ios-chips" style="padding: 8px 14px;">
+              <label class="ios-chip"><input type="radio" name="lutCat" checked onchange="filterLUTCategory('all')">All LUTs<small>5</small></label>
+              <label class="ios-chip"><input type="radio" name="lutCat" onchange="filterLUTCategory('film')">Film Print</label>
+              <label class="ios-chip"><input type="radio" name="lutCat" onchange="filterLUTCategory('tech')">Log / Rec.709</label>
+            </div>
+
+            <div class="slider-block" style="padding-top:2px;padding-bottom:4px">
+              <div>
+                <div class="slider-header">
+                  <span>3D LUT Intensity</span>
+                  <span class="slider-val" id="valLutIntensity">100%</span>
+                </div>
+                <!-- iOS 26 Component 8: Slider -->
+                <div class="ios-slider">
+                  <input type="range" id="sliderLutIntensity" min="0" max="100" value="100" aria-label="3D LUT Intensity" oninput="updateParam('lutIntensity', this.value / 100)">
+                  <i class="ios-icon ios-icon--sun" style="--w:16px;--h:16px"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- iOS 26 Component 9: Grouped List -->
+            <div class="ios-list" style="padding: 4px 0 12px;">
+              <section class="ios-list__section">
+                <div class="ios-list__group" id="mobileLutListGroup">
+                  <label class="ios-row" data-cat="tech">
+                    <input type="radio" name="mobileLutRadio" checked onchange="applyLUTPreset('rec709', 'Rec.709 Natural Neutral')">
+                    <div class="ios-row__body">
+                      <span class="ios-row__title">Rec.709 Natural Neutral</span>
+                      <span class="ios-row__detail">32^3</span>
+                      <i class="ios-row__check ios-icon ios-icon--checkmark" style="--w:17px;--h:16px"></i>
+                    </div>
+                  </label>
+                  <label class="ios-row" data-cat="film">
+                    <input type="radio" name="mobileLutRadio" onchange="applyLUTPreset('kodak2383', 'Kodak 2383 Film Print')">
+                    <div class="ios-row__body">
+                      <span class="ios-row__title">Kodak 2383 Film Print</span>
+                      <span class="ios-row__detail">32^3</span>
+                      <i class="ios-row__check ios-icon ios-icon--checkmark" style="--w:17px;--h:16px"></i>
+                    </div>
+                  </label>
+                  <label class="ios-row" data-cat="film">
+                    <input type="radio" name="mobileLutRadio" onchange="applyLUTPreset('tungsten', 'Cine Tungsten & Amber')">
+                    <div class="ios-row__body">
+                      <span class="ios-row__title">Cine Tungsten & Amber</span>
+                      <span class="ios-row__detail">32^3</span>
+                      <i class="ios-row__check ios-icon ios-icon--checkmark" style="--w:17px;--h:16px"></i>
+                    </div>
+                  </label>
+                  <label class="ios-row" data-cat="film">
+                    <input type="radio" name="mobileLutRadio" onchange="applyLUTPreset('bleach', 'Silver Bleach Retention')">
+                    <div class="ios-row__body">
+                      <span class="ios-row__title">Silver Bleach Retention</span>
+                      <span class="ios-row__detail">32^3</span>
+                      <i class="ios-row__check ios-icon ios-icon--checkmark" style="--w:17px;--h:16px"></i>
+                    </div>
+                  </label>
+                  <label class="ios-row" data-cat="tech">
+                    <input type="radio" name="mobileLutRadio" onchange="applyLUTPreset('applelog', 'Apple Log to Rec.709')">
+                    <div class="ios-row__body">
+                      <span class="ios-row__title">Apple Log to Rec.709 SDR</span>
+                      <span class="ios-row__detail">32^3</span>
+                      <i class="ios-row__check ios-icon ios-icon--checkmark" style="--w:17px;--h:16px"></i>
+                    </div>
+                  </label>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <!-- TAB 2: 3-Way Color Wheels (10% @samdesain Fallback) -->
+          <div id="tabPaneWheels" class="hidden-pane">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 14px 0;">
+              <span style="font-family:var(--mono-font);font-size:11px;opacity:0.75">3-WAY COLOR CORRECTOR</span>
+              <button type="button" class="ios-button" data-variant="gray" data-size="sm" onclick="zeroColorWheels()">Zero Wheels</button>
+            </div>
+            <div class="wheels-grid">
+              <!-- Lift Wheel -->
+              <div class="wheel-card">
+                <span class="wheel-label">LIFT (SHADOW)</span>
+                <div class="wheel-ring" id="wheelLift" data-wheel="lift" role="slider" aria-label="Lift Shadows Color Wheel" tabindex="0">
+                  <div class="wheel-puck" id="puckLift"></div>
+                </div>
+                <span class="wheel-readout" id="readoutLift">R:+0.00 B:+0.00</span>
+                <div class="ios-slider" style="width:100%">
+                  <input type="range" min="-50" max="50" value="0" aria-label="Lift Master Luminance" oninput="updateWheelLuma('lift', this.value / 100)">
+                </div>
+              </div>
+
+              <!-- Gamma Wheel -->
+              <div class="wheel-card">
+                <span class="wheel-label">GAMMA (MID)</span>
+                <div class="wheel-ring" id="wheelGamma" data-wheel="gamma" role="slider" aria-label="Gamma Midtones Color Wheel" tabindex="0">
+                  <div class="wheel-puck" id="puckGamma"></div>
+                </div>
+                <span class="wheel-readout" id="readoutGamma">R:+0.00 B:+0.00</span>
+                <div class="ios-slider" style="width:100%">
+                  <input type="range" min="-50" max="50" value="0" aria-label="Gamma Master Luminance" oninput="updateWheelLuma('gamma', this.value / 100)">
+                </div>
+              </div>
+
+              <!-- Gain Wheel -->
+              <div class="wheel-card">
+                <span class="wheel-label">GAIN (HIGH)</span>
+                <div class="wheel-ring" id="wheelGain" data-wheel="gain" role="slider" aria-label="Gain Highlights Color Wheel" tabindex="0">
+                  <div class="wheel-puck" id="puckGain"></div>
+                </div>
+                <span class="wheel-readout" id="readoutGain">R:+0.00 B:+0.00</span>
+                <div class="ios-slider" style="width:100%">
+                  <input type="range" min="-50" max="50" value="0" aria-label="Gain Master Luminance" oninput="updateWheelLuma('gain', this.value / 100)">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 3: Primary Grading Sliders (iOS 26 Sliders & Switches) -->
+          <div id="tabPaneSliders" class="hidden-pane">
+            <div class="slider-block">
+              <div>
+                <div class="slider-header"><span>Exposure (CIExposureAdjust)</span><span class="slider-val" id="valExposure">+0.00 EV</span></div>
+                <div class="ios-slider"><input type="range" id="sliderExposure" min="-200" max="200" value="0" aria-label="Exposure EV" oninput="updateParam('exposure', this.value / 100)"><i class="ios-icon ios-icon--sun" style="--w:16px;--h:16px"></i></div>
+              </div>
+              <div>
+                <div class="slider-header"><span>S-Curve Contrast</span><span class="slider-val" id="valContrast">1.00x</span></div>
+                <div class="ios-slider"><input type="range" id="sliderContrast" min="50" max="150" value="100" aria-label="S-Curve Contrast" oninput="updateParam('contrast', this.value / 100)"></div>
+              </div>
+              <div>
+                <div class="slider-header"><span>White Balance Temp</span><span class="slider-val" id="valTemp">6500K</span></div>
+                <div class="ios-slider" style="--fill:var(--ios-orange)"><input type="range" id="sliderTemp" min="3200" max="9800" value="6500" aria-label="Color Temperature Kelvin" oninput="updateParam('temperature', Number(this.value))"></div>
+              </div>
+              <div>
+                <div class="slider-header"><span>Tint (Green / Magenta)</span><span class="slider-val" id="valTint">+0</span></div>
+                <div class="ios-slider" style="--fill:var(--ios-green)"><input type="range" id="sliderTint" min="-100" max="100" value="0" aria-label="Tint Shift" oninput="updateParam('tint', Number(this.value))"></div>
+              </div>
+              <div>
+                <div class="slider-header"><span>Skin-Safe Vibrance</span><span class="slider-val" id="valVibrance">+0.00</span></div>
+                <div class="ios-slider"><input type="range" id="sliderVibrance" min="-100" max="100" value="0" aria-label="Skin-Safe Vibrance" oninput="updateParam('vibrance', this.value / 100)"></div>
+              </div>
+              <div>
+                <div class="slider-header"><span>Saturation</span><span class="slider-val" id="valSaturation">1.00x</span></div>
+                <div class="ios-slider"><input type="range" id="sliderSaturation" min="0" max="200" value="100" aria-label="Saturation" oninput="updateParam('saturation', this.value / 100)"></div>
+              </div>
+            </div>
+
+            <div class="ios-list" style="padding: 0 0 12px;">
+              <section class="ios-list__section">
+                <div class="ios-list__group">
+                  <div class="ios-row">
+                    <div class="ios-row__body">
+                      <span class="ios-row__title">HDR PQ/HLG to Rec.709 Tonemap</span>
+                      <input class="ios-switch" type="checkbox" role="switch" aria-label="HDR to Rec.709 Tonemap" checked onchange="togglePipelineFlag('hdrTonemap', this.checked)">
+                    </div>
+                  </div>
+                  <div class="ios-row">
+                    <div class="ios-row__body">
+                      <span class="ios-row__title">Anti-Banding Dither (0.5 LSB)</span>
+                      <input class="ios-switch" type="checkbox" role="switch" aria-label="Anti-Banding Triangular PDF Dither" checked onchange="togglePipelineFlag('dither', this.checked)">
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <!-- TAB 4: Social Media Master Export Configuration -->
+          <div id="tabPaneExport" class="hidden-pane">
+            <div class="ios-chips" style="padding: 8px 14px;">
+              <label class="ios-chip"><input type="radio" name="aspectChip" checked onchange="setAspectPreset('1080x1920 (9:16)')">9:16 Reels/TikTok</label>
+              <label class="ios-chip"><input type="radio" name="aspectChip" onchange="setAspectPreset('1080x1350 (4:5)')">4:5 Feed</label>
+              <label class="ios-chip"><input type="radio" name="aspectChip" onchange="setAspectPreset('1080x1080 (1:1)')">1:1 Square</label>
+            </div>
+
+            <div class="ios-list" style="padding: 4px 0 12px;">
+              <section class="ios-list__section">
+                <h2 class="ios-list__header">Rec. 709 Social Encoder Specs</h2>
+                <div class="ios-list__group">
+                  <div class="ios-row"><div class="ios-row__body"><span class="ios-row__title">Video Codec</span><span class="ios-row__detail">H.264 High L4.2</span></div></div>
+                  <div class="ios-row"><div class="ios-row__body"><span class="ios-row__title">Color Primaries</span><span class="ios-row__detail">ITU-R BT.709-2</span></div></div>
+                  <div class="ios-row"><div class="ios-row__body"><span class="ios-row__title">CFR Target Bitrate</span><span class="ios-row__detail" id="detailBitrate">20 Mbps (Max 24M)</span></div></div>
+                </div>
+              </section>
+            </div>
+
+            <div style="padding: 0 16px 14px;">
+              <button type="button" class="ios-button" data-variant="filled" data-size="lg" data-block onclick="openExportSheet()">Render Rec.709 Master</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <!-- Keyboard Shortcut Footer -->
+      <div class="shortcut-hint-bar">
+        <span>[Space] Play/Pause</span>
+        <span>[\] Split Before/After</span>
+        <span>[E] Export Sheet</span>
+        <span>[R] Reset</span>
+      </div>
+
+      <!-- iOS 26 Component 10: Sheet (Offline Master Export Progress) -->
+      <div id="exportSheetLayer" class="ios-layer" style="display:none">
+        <a class="ios-layer__scrim" href="#_" aria-label="Dismiss Export Sheet" onclick="closeOverlays(event)"></a>
+        <div class="ios-sheet" data-detent="medium" role="dialog" aria-label="Exporting Rec.709 Master">
+          <span class="ios-sheet__grabber"></span>
+          <div class="ios-sheet__toolbar">
+            <div class="ios-sheet__leading">
+              <button type="button" class="ios-barbutton" aria-label="Cancel Export" onclick="closeOverlays(event)">
+                <i class="ios-icon ios-icon--xmark"></i>
+              </button>
+            </div>
+            <h2 class="ios-sheet__title">Master Export (Rec. 709)</h2>
+            <div class="ios-sheet__trailing">
+              <button type="button" class="ios-barbutton" data-variant="prominent" aria-label="Done" onclick="closeOverlays(event)">
+                <i class="ios-icon ios-icon--checkmark"></i>
+              </button>
+            </div>
+          </div>
+          <div class="ios-sheet__body" style="padding: 16px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <span style="font-size:13px;font-weight:600" id="exportStatusLabel">Encoding H.264 High Profile L4.2 (CFR)...</span>
+              <span style="font-family:var(--mono-font);font-size:13px" id="exportPercentText">68%</span>
+            </div>
+            <!-- iOS 26 Component 11: Progress Bar -->
+            <div class="ios-progress" id="exportProgressBar" style="--value:68"><i></i></div>
+
+            <div class="ios-list" style="padding:14px 0 0">
+              <section class="ios-list__section">
+                <div class="ios-list__group">
+                  <div class="ios-row"><div class="ios-row__body"><span class="ios-row__title">Color Tags</span><span class="ios-row__detail">ITU_R_709_2 SDR</span></div></div>
+                  <div class="ios-row"><div class="ios-row__body"><span class="ios-row__title">Micro-Dither</span><span class="ios-row__detail">0.5 LSB Triangular PDF</span></div></div>
+                  <div class="ios-row"><div class="ios-row__body"><span class="ios-row__title">Zero CPU Copy</span><span class="ios-row__detail">MTLTexture -> AVAssetWriter</span></div></div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- iOS 26 Component 12: Alert (Error State Validation R-27) -->
+      <div id="errorAlertLayer" class="ios-layer ios-alert-layer" style="display:none">
+        <a class="ios-layer__scrim" href="#_" aria-label="Dismiss Alert" onclick="closeOverlays(event)"></a>
+        <div class="ios-alert" role="alertdialog" aria-labelledby="alertTitle">
+          <div class="ios-alert__text">
+            <h2 class="ios-alert__title" id="alertTitle">Invalid .cube LUT Format</h2>
+            <p class="ios-alert__message" id="alertMessage">Missing LUT_3D_SIZE declaration or triplet count mismatch. Ensure the .cube file contains N^3 RGB floating-point triplets (dimension 2 to 64).</p>
+          </div>
+          <div class="ios-alert__actions" data-layout="side">
+            <button type="button" class="ios-alert__action" data-role="cancel" onclick="closeOverlays(event)">Dismiss</button>
+            <button type="button" class="ios-alert__action" data-preferred onclick="closeOverlays(event);document.getElementById('realCubeInput').click()">Pick Another File</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- iOS 26 Component 13: Home Indicator -->
+      <div class="ios-home-indicator"></div>
+    </div>
+  </main>
+
+  <script>
+    const state = {
+      device: 'iphone',
+      dark: true,
+      uiState: 'active',
+      playing: true,
+      frameTick: 0,
+      splitActive: true,
+      splitX: 0.55,
+      bypass: false,
+      lutPreset: 'rec709',
+      lutName: 'Rec.709 Natural',
+      lutIntensity: 1.0,
+      exposure: 0.0,
+      contrast: 1.0,
+      temperature: 6500,
+      tint: 0,
+      vibrance: 0.0,
+      saturation: 1.0,
+      hdrTonemap: true,
+      dither: true,
+      wheels: {
+        lift: { r: 0, b: 0, luma: 0 },
+        gamma: { r: 0, b: 0, luma: 0 },
+        gain: { r: 0, b: 0, luma: 0 }
+      },
+      customCubeTable: null
+    };
+
+    const canvas = document.getElementById('gradingCanvas');
+    const ctx = canvas.getContext('2d');
+    let exportTimer = null;
+
+    function showHUD(message) {
+      const banner = document.getElementById('hudBanner');
+      document.getElementById('hudText').textContent = message;
+      banner.style.display = 'inline-flex';
+      clearTimeout(banner._hideTimeout);
+      banner._hideTimeout = setTimeout(() => {
+        banner.style.display = 'none';
+      }, 2200);
+    }
+
+    function setDeviceMode(mode) {
+      state.device = mode;
+      const surface = document.getElementById('iosSurface');
+      surface.setAttribute('data-device', mode);
+      document.getElementById('btnDeviceIphone').setAttribute('aria-pressed', mode === 'iphone');
+      document.getElementById('btnDeviceIpad').setAttribute('aria-pressed', mode === 'ipad');
+      document.getElementById('btnDeviceMac').setAttribute('aria-pressed', mode === 'mac');
+
+      // On iPad/Mac, show Wheels + Sliders simultaneously inside the right inspector
+      if (mode === 'ipad' || mode === 'mac') {
+        document.getElementById('tabPaneLuts').classList.add('hidden-pane');
+        document.getElementById('tabPaneWheels').classList.remove('hidden-pane');
+        document.getElementById('tabPaneSliders').classList.remove('hidden-pane');
+        document.getElementById('tabPaneExport').classList.remove('hidden-pane');
+      } else {
+        const checkedRadio = document.querySelector('input[name="deckTab"]:checked');
+        switchDeckTab(checkedRadio ? checkedRadio.value : 'luts');
+      }
+      showHUD('Switched layout: ' + mode.toUpperCase());
+    }
+
+    function toggleTheme() {
+      state.dark = !state.dark;
+      const surface = document.getElementById('iosSurface');
+      const btn = document.getElementById('btnThemeToggle');
+      if (state.dark) {
+        surface.classList.add('dark');
+        document.body.classList.remove('light-env');
+        btn.textContent = 'Theme: Dark';
+        btn.setAttribute('aria-pressed', 'true');
+      } else {
+        surface.classList.remove('dark');
+        document.body.classList.add('light-env');
+        btn.textContent = 'Theme: Light';
+        btn.setAttribute('aria-pressed', 'false');
+      }
+    }
+
+    function setUIState(mode) {
+      state.uiState = mode;
+      document.getElementById('btnStateActive').setAttribute('aria-pressed', mode === 'active');
+      document.getElementById('btnStateEmpty').setAttribute('aria-pressed', mode === 'empty');
+      document.getElementById('btnStateExport').setAttribute('aria-pressed', 'false');
+      document.getElementById('btnStateError').setAttribute('aria-pressed', 'false');
+
+      closeOverlays();
+      const emptyEl = document.getElementById('emptyStateContainer');
+      const activeEl = document.getElementById('activeWorkspace');
+      if (mode === 'empty') {
+        emptyEl.classList.remove('hidden-pane');
+        activeEl.classList.add('hidden-pane');
+      } else {
+        emptyEl.classList.add('hidden-pane');
+        activeEl.classList.remove('hidden-pane');
+      }
+    }
+
+    function switchDeckTab(tab) {
+      if (state.device === 'ipad' || state.device === 'mac') {
+        // In wide split view, all panels remain accessible or scroll into view
+        const map = { luts: 'tabPaneLuts', wheels: 'tabPaneWheels', sliders: 'tabPaneSliders', export: 'tabPaneExport' };
+        ['tabPaneLuts', 'tabPaneWheels', 'tabPaneSliders', 'tabPaneExport'].forEach(id => {
+          document.getElementById(id).classList.remove('hidden-pane');
+        });
+        const target = document.getElementById(map[tab]);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        return;
+      }
+      document.getElementById('tabPaneLuts').classList.toggle('hidden-pane', tab !== 'luts');
+      document.getElementById('tabPaneWheels').classList.toggle('hidden-pane', tab !== 'wheels');
+      document.getElementById('tabPaneSliders').classList.toggle('hidden-pane', tab !== 'sliders');
+      document.getElementById('tabPaneExport').classList.toggle('hidden-pane', tab !== 'export');
+    }
+
+    function applyLUTPreset(code, label) {
+      state.lutPreset = code;
+      state.lutName = label;
+      state.customCubeTable = null;
+      document.getElementById('badgeActiveLUT').textContent = 'LUT: ' + label;
+      showHUD('Applied ' + label);
+    }
+
+    function filterLUTCategory(cat) {
+      const rows = document.querySelectorAll('#mobileLutListGroup .ios-row');
+      rows.forEach(row => {
+        const rowCat = row.getAttribute('data-cat');
+        row.style.display = (cat === 'all' || rowCat === cat) ? '' : 'none';
+      });
+    }
+
+    function filterLUTList(query) {
+      const q = query.trim().toLowerCase();
+      const rows = document.querySelectorAll('.sidebar-luts .ios-row');
+      rows.forEach(r => {
+        const txt = r.textContent.toLowerCase();
+        r.style.display = txt.includes(q) ? '' : 'none';
+      });
+    }
+
+    function updateParam(key, val) {
+      state[key] = val;
+      if (key === 'lutIntensity') {
+        document.getElementById('valLutIntensity').textContent = Math.round(val * 100) + '%';
+      } else if (key === 'exposure') {
+        document.getElementById('valExposure').textContent = (val >= 0 ? '+' : '') + val.toFixed(2) + ' EV';
+      } else if (key === 'contrast') {
+        document.getElementById('valContrast').textContent = val.toFixed(2) + 'x';
+      } else if (key === 'temperature') {
+        document.getElementById('valTemp').textContent = Math.round(val) + 'K';
+      } else if (key === 'tint') {
+        document.getElementById('valTint').textContent = (val >= 0 ? '+' : '') + Math.round(val);
+      } else if (key === 'vibrance') {
+        document.getElementById('valVibrance').textContent = (val >= 0 ? '+' : '') + val.toFixed(2);
+      } else if (key === 'saturation') {
+        document.getElementById('valSaturation').textContent = val.toFixed(2) + 'x';
+      }
+    }
+
+    function togglePipelineFlag(flag, checked) {
+      if (flag === 'hdrTonemap') {
+        state.hdrTonemap = checked;
+        document.getElementById('badgeColorSpace').textContent = checked ? 'HDR PQ -> Rec.709 SDR' : 'HDR PQ Raw (Unmapped)';
+      } else if (flag === 'dither') {
+        state.dither = checked;
+        document.getElementById('badgeDither').textContent = checked ? 'DITHER 0.5 LSB' : 'DITHER OFF';
+      }
+    }
+
+    function setAspectPreset(label) {
+      document.getElementById('badgeResolution').textContent = label;
+      showHUD('Aspect Ratio: ' + label);
+    }
+
+    function zeroColorWheels() {
+      ['lift', 'gamma', 'gain'].forEach(w => {
+        state.wheels[w] = { r: 0, b: 0, luma: 0 };
+        const puck = document.getElementById('puck' + w.charAt(0).toUpperCase() + w.slice(1));
+        puck.style.left = '50%';
+        puck.style.top = '50%';
+        document.getElementById('readout' + w.charAt(0).toUpperCase() + w.slice(1)).textContent = 'R:+0.00 B:+0.00';
+      });
+      showHUD('3-Way Color Wheels zeroed');
+    }
+
+    function updateWheelLuma(wheel, val) {
+      state.wheels[wheel].luma = val;
+    }
+
+    function resetAllGrading() {
+      state.exposure = 0.0;
+      state.contrast = 1.0;
+      state.temperature = 6500;
+      state.tint = 0;
+      state.vibrance = 0.0;
+      state.saturation = 1.0;
+      state.lutIntensity = 1.0;
+      document.getElementById('sliderExposure').value = 0;
+      document.getElementById('sliderContrast').value = 100;
+      document.getElementById('sliderTemp').value = 6500;
+      document.getElementById('sliderTint').value = 0;
+      document.getElementById('sliderVibrance').value = 0;
+      document.getElementById('sliderSaturation').value = 100;
+      document.getElementById('sliderLutIntensity').value = 100;
+      updateParam('exposure', 0);
+      updateParam('contrast', 1);
+      updateParam('temperature', 6500);
+      updateParam('tint', 0);
+      updateParam('vibrance', 0);
+      updateParam('saturation', 1);
+      updateParam('lutIntensity', 1);
+      zeroColorWheels();
+      showHUD('Reset all parameters to reference neutral');
+    }
+
+    function togglePlayback() {
+      state.playing = !state.playing;
+      const icon = document.getElementById('playPauseIcon');
+      icon.className = state.playing ? 'ios-icon ios-icon--pause' : 'ios-icon ios-icon--play';
+    }
+
+    function stepFrame(delta) {
+      state.playing = false;
+      document.getElementById('playPauseIcon').className = 'ios-icon ios-icon--play';
+      state.frameTick = Math.max(0, state.frameTick + delta * 5);
+    }
+
+    function toggleSplitWipe() {
+      state.splitActive = !state.splitActive;
+      const bar = document.getElementById('splitWipeBar');
+      bar.style.display = state.splitActive ? 'block' : 'none';
+      showHUD(state.splitActive ? 'Split Comparison Enabled' : 'Full Frame Graded View');
+    }
+
+    function setBypass(flag) {
+      state.bypass = flag;
+    }
+
+    function toggleBypassClick() {
+      state.bypass = !state.bypass;
+      showHUD(state.bypass ? 'Bypassed (Showing Original Log/HDR)' : 'Grading Active');
+    }
+
+    function openExportSheet() {
+      setUIState('active');
+      document.getElementById('btnStateActive').setAttribute('aria-pressed', 'false');
+      document.getElementById('btnStateExport').setAttribute('aria-pressed', 'true');
+      const layer = document.getElementById('exportSheetLayer');
+      layer.style.display = 'block';
+      let pct = 12;
+      clearInterval(exportTimer);
+      exportTimer = setInterval(() => {
+        pct = Math.min(100, pct + 4);
+        document.getElementById('exportProgressBar').style.setProperty('--value', pct);
+        document.getElementById('exportPercentText').textContent = pct + '%';
+        if (pct >= 100) {
+          document.getElementById('exportStatusLabel').textContent = 'Export Ready : Rec.709 H.264 CFR Master';
+          clearInterval(exportTimer);
+        }
+      }, 120);
+    }
+
+    function openErrorAlert(customMsg) {
+      setUIState('active');
+      document.getElementById('btnStateActive').setAttribute('aria-pressed', 'false');
+      document.getElementById('btnStateError').setAttribute('aria-pressed', 'true');
+      if (customMsg) {
+        document.getElementById('alertMessage').textContent = customMsg;
+      }
+      document.getElementById('errorAlertLayer').style.display = 'block';
+    }
+
+    function closeOverlays(e) {
+      if (e) e.preventDefault();
+      clearInterval(exportTimer);
+      document.getElementById('exportSheetLayer').style.display = 'none';
+      document.getElementById('errorAlertLayer').style.display = 'none';
+    }
+
+    // Interactive Dragging for Split Wipe Bar & 3-Way Color Wheels
+    (function setupInteractions() {
+      const stage = document.getElementById('canvasStage');
+      const splitBar = document.getElementById('splitWipeBar');
+      let draggingSplit = false;
+
+      splitBar.addEventListener('pointerdown', (e) => {
+        draggingSplit = true;
+        splitBar.setPointerCapture(e.pointerId);
+      });
+      splitBar.addEventListener('pointermove', (e) => {
+        if (!draggingSplit) return;
+        const rect = stage.getBoundingClientRect();
+        const norm = Math.min(0.95, Math.max(0.05, (e.clientX - rect.left) / rect.width));
+        state.splitX = norm;
+        splitBar.style.left = (norm * 100) + '%';
+      });
+      splitBar.addEventListener('pointerup', () => { draggingSplit = false; });
+
+      document.querySelectorAll('.wheel-ring').forEach(ring => {
+        const wheelName = ring.getAttribute('data-wheel');
+        const puck = ring.querySelector('.wheel-puck');
+        const readout = document.getElementById('readout' + wheelName.charAt(0).toUpperCase() + wheelName.slice(1));
+        let draggingWheel = false;
+
+        const updateFromEvent = (e) => {
+          const rect = ring.getBoundingClientRect();
+          const cx = rect.width / 2;
+          const cy = rect.height / 2;
+          const dx = Math.max(-1, Math.min(1, (e.clientX - rect.left - cx) / (cx - 8)));
+          const dy = Math.max(-1, Math.min(1, (cy - (e.clientY - rect.top)) / (cy - 8)));
+          puck.style.left = (50 + dx * 38) + '%';
+          puck.style.top = (50 - dy * 38) + '%';
+          state.wheels[wheelName].r = dx * 0.35;
+          state.wheels[wheelName].b = dy * 0.35;
+          readout.textContent = `R:${dx >= 0 ? '+' : ''}${(dx * 0.35).toFixed(2)} B:${dy >= 0 ? '+' : ''}${(dy * 0.35).toFixed(2)}`;
+        };
+
+        ring.addEventListener('pointerdown', (e) => {
+          draggingWheel = true;
+          ring.setPointerCapture(e.pointerId);
+          updateFromEvent(e);
+        });
+        ring.addEventListener('pointermove', (e) => {
+          if (draggingWheel) updateFromEvent(e);
+        });
+        ring.addEventListener('pointerup', () => { draggingWheel = false; });
+      });
+    })();
+
+    // Real .cube File Parser in Browser
+    function handleCubeFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target.result;
+        const lines = text.split(/\r?\n/);
+        let size = null;
+        let triplets = 0;
+        let rSum = 0, gSum = 0, bSum = 0;
+
+        for (let line of lines) {
+          const clean = line.split('#')[0].trim();
+          if (!clean) continue;
+          if (clean.toUpperCase().startsWith('LUT_3D_SIZE')) {
+            const parts = clean.split(/\s+/);
+            size = parseInt(parts[1], 10);
+            continue;
+          }
+          if (/^[A-Za-z]/.test(clean)) continue;
+          const nums = clean.split(/\s+/).map(Number);
+          if (nums.length >= 3 && !nums.some(isNaN)) {
+            triplets++;
+            rSum += nums[0];
+            gSum += nums[1];
+            bSum += nums[2];
+          }
+        }
+
+        if (!size || size < 2 || size > 64 || triplets !== size * size * size) {
+          openErrorAlert(`File '${file.name}' failed validation: Expected LUT_3D_SIZE N (2..64) with N^3 RGB triplets, found size=${size || 'none'} and ${triplets} triplets.`);
+          return;
+        }
+
+        state.lutName = file.name.replace(/\.cube$/i, '');
+        state.lutPreset = 'custom';
+        state.customCubeTable = {
+          rBias: (rSum / triplets) - 0.5,
+          gBias: (gSum / triplets) - 0.5,
+          bBias: (bSum / triplets) - 0.5
+        };
+        document.getElementById('badgeActiveLUT').textContent = `LUT: ${state.lutName} (${size}^3)`;
+        showHUD(`Parsed ${file.name} (${size}x${size}x${size})`);
+      };
+      reader.readAsText(file);
+    }
+
+    function handleVideoFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      setUIState('active');
+      showHUD('Loaded clip: ' + file.name);
+    }
+
+    function handleCanvasDrop(event) {
+      event.preventDefault();
+      const files = event.dataTransfer.files;
+      if (!files || !files.length) return;
+      const f = files[0];
+      if (f.name.toLowerCase().endsWith('.cube')) {
+        handleCubeFile({ target: { files: [f] } });
+      } else {
+        showHUD('Loaded dropped media: ' + f.name);
+      }
+    }
+
+    // Keyboard Shortcuts (Mac & iPad Pro NLE workflow + Escape modal close R-32)
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT') return;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        togglePlayback();
+      } else if (e.key === '\\') {
+        e.preventDefault();
+        toggleSplitWipe();
+      } else if (e.key === 'e' || e.key === 'E') {
+        e.preventDefault();
+        openExportSheet();
+      } else if (e.key === 'r' || e.key === 'R') {
+        e.preventDefault();
+        resetAllGrading();
+      } else if (e.key === 'Escape') {
+        closeOverlays();
+      } else if (e.key === 'j' || e.key === 'J') {
+        stepFrame(-2);
+      } else if (e.key === 'k' || e.key === 'K') {
+        state.playing = false;
+      } else if (e.key === 'l' || e.key === 'L') {
+        stepFrame(2);
+      }
+    });
+
+    // Real-Time 60fps Procedural Reference Video + Color Grading Shader Simulation
+    function renderLoop() {
+      if (state.playing) {
+        state.frameTick += 1;
+      }
+
+      const totalFrames = state.frameTick;
+      const ff = String(totalFrames % 60).padStart(2, '0');
+      const ss = String(Math.floor(totalFrames / 60) % 60).padStart(2, '0');
+      document.getElementById('timecodeReadout').textContent = `00:00:${ss}:${ff}`;
+
+      const w = canvas.width;
+      const h = canvas.height;
+      const t = state.frameTick * 0.018;
+
+      // 1. Draw Un-graded Original Reference Scene on right side (or full canvas)
+      ctx.save();
+      drawScenePass(ctx, w, h, t, false);
+      ctx.restore();
+
+      // 2. Draw Graded Pass clipped to Left of Split Wipe Bar (unless bypassed)
+      if (!state.bypass) {
+        const splitPixel = state.splitActive ? Math.floor(w * state.splitX) : w;
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, 0, splitPixel, h);
+        ctx.clip();
+        drawScenePass(ctx, w, h, t, true);
+        ctx.restore();
+      }
+
+      requestAnimationFrame(renderLoop);
+    }
+
+    function transformColor(r, g, b, graded) {
+      if (!graded) {
+        // Simulate raw un-tonemapped Log/HDR source look
+        return `rgb(${Math.round(r * 0.88 + 22)}, ${Math.round(g * 0.86 + 24)}, ${Math.round(b * 0.85 + 26)})`;
+      }
+
+      let rf = r / 255;
+      let gf = g / 255;
+      let bf = b / 255;
+
+      // Stage 1: Exposure (EV) & Contrast
+      const evMult = Math.pow(2, state.exposure * 0.65);
+      rf *= evMult;
+      gf *= evMult;
+      bf *= evMult;
+
+      rf = (rf - 0.5) * state.contrast + 0.5;
+      gf = (gf - 0.5) * state.contrast + 0.5;
+      bf = (bf - 0.5) * state.contrast + 0.5;
+
+      // Stage 2: White Balance Temperature & Tint
+      const tempShift = (state.temperature - 6500) / 10000;
+      const tintShift = state.tint / 400;
+      rf += tempShift * 0.22;
+      bf -= tempShift * 0.22;
+      gf += tintShift * 0.18;
+
+      // Stage 3: 3-Way Color Wheels (Lift / Gamma / Gain)
+      const luma = 0.2126 * rf + 0.7152 * gf + 0.0722 * bf;
+      const shadowW = Math.max(0, 1 - luma * 1.5);
+      const highW = Math.max(0, (luma - 0.35) * 1.5);
+      const midW = Math.max(0, 1 - Math.abs(luma - 0.5) * 2);
+
+      rf += shadowW * (state.wheels.lift.r + state.wheels.lift.luma) + midW * (state.wheels.gamma.r + state.wheels.gamma.luma) + highW * (state.wheels.gain.r + state.wheels.gain.luma);
+      gf += shadowW * state.wheels.lift.luma + midW * state.wheels.gamma.luma + highW * state.wheels.gain.luma;
+      bf += shadowW * (state.wheels.lift.b + state.wheels.lift.luma) + midW * (state.wheels.gamma.b + state.wheels.gamma.luma) + highW * (state.wheels.gain.b + state.wheels.gain.luma);
+
+      // Stage 4: 3D LUT Preset Transform + Intensity Mix
+      let lr = rf, lg = gf, lb = bf;
+      if (state.lutPreset === 'kodak2383') {
+        lr = rf * 1.08 + 0.02;
+        lg = gf * 0.99;
+        lb = bf * 0.90 + (1 - luma) * 0.06;
+      } else if (state.lutPreset === 'tungsten') {
+        lr = rf + highW * 0.10 - shadowW * 0.06;
+        lg = gf + 0.02;
+        lb = bf + shadowW * 0.11 - highW * 0.07;
+      } else if (state.lutPreset === 'bleach') {
+        lr = rf * 0.45 + luma * 0.55;
+        lg = gf * 0.45 + luma * 0.55;
+        lb = bf * 0.45 + luma * 0.55;
+      } else if (state.lutPreset === 'applelog') {
+        lr = Math.pow(Math.max(0, rf), 0.85) * 1.12;
+        lg = Math.pow(Math.max(0, gf), 0.85) * 1.08;
+        lb = Math.pow(Math.max(0, bf), 0.85) * 1.05;
+      } else if (state.lutPreset === 'custom' && state.customCubeTable) {
+        lr = rf + state.customCubeTable.rBias * 0.3;
+        lg = gf + state.customCubeTable.gBias * 0.3;
+        lb = bf + state.customCubeTable.bBias * 0.3;
+      }
+
+      rf = rf * (1 - state.lutIntensity) + lr * state.lutIntensity;
+      gf = gf * (1 - state.lutIntensity) + lg * state.lutIntensity;
+      bf = bf * (1 - state.lutIntensity) + lb * state.lutIntensity;
+
+      // Stage 5: Saturation & Skin Vibrance
+      const postLuma = 0.2126 * rf + 0.7152 * gf + 0.0722 * bf;
+      const satTotal = Math.max(0, state.saturation + state.vibrance * 0.5);
+      rf = postLuma + (rf - postLuma) * satTotal;
+      gf = postLuma + (gf - postLuma) * satTotal;
+      bf = postLuma + (bf - postLuma) * satTotal;
+
+      const clamp = (v) => Math.max(0, Math.min(255, Math.round(v * 255)));
+      return `rgb(${clamp(rf)}, ${clamp(gf)}, ${clamp(bf)})`;
+    }
+
+    function drawScenePass(c, w, h, t, graded) {
+      // Sky / Studio Backlight Gradient
+      const skyGrad = c.createLinearGradient(0, 0, 0, h * 0.68);
+      skyGrad.addColorStop(0, transformColor(24, 42, 74, graded));
+      skyGrad.addColorStop(0.55, transformColor(72, 96, 128, graded));
+      skyGrad.addColorStop(1, transformColor(214, 134, 88, graded));
+      c.fillStyle = skyGrad;
+      c.fillRect(0, 0, w, h);
+
+      // Sun / Practical Highlight Source (Tests HDR PQ to Rec.709 100-nit roll-off)
+      const sunX = w * 0.32 + Math.sin(t * 0.7) * 28;
+      const sunY = h * 0.32;
+      const sunGrad = c.createRadialGradient(sunX, sunY, 8, sunX, sunY, 110);
+      sunGrad.addColorStop(0, transformColor(252, 236, 195, graded));
+      sunGrad.addColorStop(0.5, transformColor(235, 162, 96, graded));
+      sunGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      c.fillStyle = sunGrad;
+      c.beginPath();
+      c.arc(sunX, sunY, 110, 0, Math.PI * 2);
+      c.fill();
+
+      // Foreground Silhouette & Architecture Geometry
+      c.fillStyle = transformColor(18, 22, 30, graded);
+      c.fillRect(0, h * 0.66, w, h * 0.34);
+
+      // Colorist Skin-Tone & Macbeth Reference Swatches on Right Side of Frame
+      const swatchColors = [
+        [194, 150, 130], // Light Warm Skin Reference
+        [115, 82, 68],   // Deep Skin Reference
+        [98, 122, 157],  // Foliage / Sky Blue
+        [224, 163, 46],  // Warm Amber Reference
+        [87, 108, 67],   // Natural Olive
+        [175, 54, 60]    // Primary Crimson
+      ];
+
+      const startX = w * 0.62;
+      const startY = h * 0.16;
+      const cellW = 36;
+      const cellH = 26;
+      swatchColors.forEach((rgb, idx) => {
+        const col = idx % 2;
+        const row = Math.floor(idx / 2);
+        const sx = startX + col * (cellW + 8);
+        const sy = startY + row * (cellH + 8);
+        c.fillStyle = transformColor(rgb[0], rgb[1], rgb[2], graded);
+        c.fillRect(sx, sy, cellW, cellH);
+        c.strokeStyle = 'rgba(255,255,255,0.22)';
+        c.strokeRect(sx, sy, cellW, cellH);
+      });
+
+      // Moving Anamorphic Subject / Horizon Wave
+      c.strokeStyle = transformColor(235, 190, 120, graded);
+      c.lineWidth = 2;
+      c.beginPath();
+      for (let x = 0; x <= w; x += 12) {
+        const y = h * 0.66 + Math.sin(x * 0.02 + t) * 8;
+        if (x === 0) c.moveTo(x, y);
+        else c.lineTo(x, y);
+      }
+      c.stroke();
+    }
+
+    requestAnimationFrame(renderLoop);
+  </script>
+</body>
+</html>
+
