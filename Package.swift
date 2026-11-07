@@ -16,8 +16,15 @@ let package = Package(
     targets: [
         .target(
             name: "ColorDisco",
-            path: "Sources/ColorDisco"
+            path: "Sources/ColorDisco",
+            resources: [
+                .process("Shaders.metal")
+            ]
+        ),
+        .testTarget(
+            name: "ColorDiscoTests",
+            dependencies: ["ColorDisco"],
+            path: "Tests/ColorDiscoTests"
         )
     ]
 )
-
